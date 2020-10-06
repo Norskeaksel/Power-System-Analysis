@@ -78,10 +78,10 @@ class PowerSystem:
         for i in Pnr:
             dProws = []
             Peq[i] = sum(V[i] * V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j]) for j in range(n))
-            for j in dnr:
+            for i in dnr:
                 dProws.append(sum(V[i] * V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j]) for j in range(n)))
 
-            for j in vnr:
+            for i in vnr:
                 dProws.append(sum(V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j]) for j in range(n)))
 
             jacobian.append(dProws)
@@ -169,13 +169,4 @@ class PowerSystem:
         for i in self.buses:
             print("bus",i,self.buses[i])
 
-        """
-        print("angles:")
-        for idx, val in enumerate(self.buses):
-            print("Delta",idx," = ",val.d,sep="")
 
-        print("Voltages:")
-        for idx, val in enumerate(self.buses):
-            print("V",idx," = ",val.v,sep="")"""
-        # self.printPower(self.P,'P')
-        # self.printPower(self.Q,'Q')

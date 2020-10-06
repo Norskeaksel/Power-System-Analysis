@@ -1,8 +1,8 @@
 import importlib
-from NewtonRapson import PowerSystemClasses
+from NewtonRapson import PowerSystem
 
-importlib.reload(PowerSystemClasses)
-from NewtonRapson.PowerSystemClasses import *
+importlib.reload(PowerSystem)
+from NewtonRapson.PowerSystem import *
 
 def z(r, x):
     return complex(r, x)
