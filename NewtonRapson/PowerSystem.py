@@ -35,11 +35,10 @@ class PowerSystem:
         self.Qnr = Qnr
         self.PQsch = PQsch
         self.deltaPQ = PQsch
-        self.dnr = [i for i in Pnr]
-        self.vnr = [i for i in Qnr]
         self.buildYbus()
         print("ITERATION 0:")
         self.PFequations()
+        self.buildJacobian()
 
     def buildYbus(self):
         n = self.n
@@ -66,44 +65,61 @@ class PowerSystem:
         n = self.n
         Pnr = self.Pnr
         Qnr = self.Qnr
-        dnr = self.dnr
-        vnr = self.vnr
-        js = len(Pnr) + len(Qnr)
-
         V = [buses[i].v for i in range(n)]
         D = [buses[i].d for i in range(n)]
-
-        jacobian = []
         Peq = np.full(n, -1)
+
         for i in Pnr:
-            dProws = []
             Peq[i] = sum(V[i] * V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j]) for j in range(n))
-            for i in dnr:
-                dProws.append(sum(V[i] * V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j]) for j in range(n)))
-
-            for i in vnr:
-                dProws.append(sum(V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j]) for j in range(n)))
-
-            jacobian.append(dProws)
 
         PQk = [i for i in Peq if i != -1]
         Qeq = np.full(n, -1)
         for i in Qnr:
-            dQrows = []
             Qeq[i] = -sum(V[i] * V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j]) for j in range(n))
-            for j in dnr:
-                dQrows.append(sum(V[i] * V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j]) for j in range(n)))
 
-            for j in vnr:
-                dQrows.append(-sum(V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j]) for j in range(n)))
+        PQk.extend([i for i in Qeq if i != -1])
+
+        self.PQk=PQk
+
+    def buildJacobian(self):
+        buses = self.buses
+        Y = self.Ymag
+        O = self.Ytheta
+        n = self.n
+        Pnr = self.Pnr
+        Qnr = self.Qnr
+        V = [buses[i].v for i in range(n)]
+        D = [buses[i].d for i in range(n)]
+
+        jacobian = []
+        for i in Pnr:
+            dProws = []
+            for i in Pnr:
+                dPi_dDi=sum(V[i] * V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j]) for j in range(n) if i!=j)
+                dProws.append(dPi_dDi)
+
+            for i in Qnr:
+                dPi_dVi=sum(V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j]) for j in range(n) if i!=j)
+                dPi_dVi+=2*V[i] * Y[i][i] * sin(O[i][i])
+                dProws.append(dPi_dVi)
+
+            jacobian.append(dProws)
+
+        for i in Qnr:
+            dQrows = []
+            for i in Pnr:
+                dQi_dDi=sum(V[i]*V[j]*Y[i][j]*cos(O[i][j]-D[i]+D[j]) for j in range(n) if i!=j)
+                dQrows.append(dQi_dDi)
+
+            for i in Qnr:
+                dQi_dVi=-sum(V[j]*Y[i][j]*sin(O[i][j]-D[i]+D[j]) for j in range(n) if i!=j)
+                dQi_dVi-=2*V[i]*sin(O[i][i])
+                dQrows.append(dQi_dVi)
 
             jacobian.append(dQrows)
 
-        PQk.extend([i for i in Qeq if i != -1])
-        self.PQk = np.array(PQk)
-        self.Peq = Peq
-        self.Qeq = Qeq
-        self.jacobian = jacobian
+        self.jacobian=np.array(jacobian)
+
 
     """
         # Calculate all power flow equations, not just the ones needed
@@ -122,12 +138,14 @@ class PowerSystem:
             dQi_dDi.append(sum(V[i]*V[j]*Y[i][j]*cos(O[i][j]-D[i]+D[j]) for j in range(n)))
             dQi_dVi.append(-sum(V[j]*Y[i][j]*sin(O[i][j]-D[i]+D[j]) for j in range(n)))"""
 
+
+
     def iteration(self):
         PQsch = self.PQsch
         PQk = self.PQk
         buses=self.buses
         deltaPQ = PQsch - PQk
-        #DVk = np.linalg.solve(self.jacobian, deltaPQ)
+        DVk = np.linalg.solve(self.jacobian, deltaPQ)
         c = 0
         for i in self.Pnr:
             buses[i].p=PQk[c]
