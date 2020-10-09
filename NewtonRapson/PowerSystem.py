@@ -39,6 +39,7 @@ class PowerSystem:
         print("ITERATION 0:")
         self.PFequations()
         self.buildJacobian()
+        self.numeric()
 
     def buildYbus(self):
         n = self.n
@@ -58,6 +59,58 @@ class PowerSystem:
         self.Ytheta = np.angle(Ybus)
         return Ybus
 
+    def dPi_dDk(self,V,Y,O,D,i,j,k):
+        """Equation to devivate on Dk:
+        V[i] * V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j])"""
+
+        if i==j:
+            return 0
+        if k==i:
+            return V[i] * V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j])
+        if k==j:
+            return -V[i] * V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j])
+        else:
+            return 0
+
+    def dPi_dVk(self,V,Y,O,D,i,j,k):
+        """Equation to devivate on Vk:
+        V[i] * V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j])"""
+
+        if i==j and k==i:
+            return 2*V[i]* Y[i][j] * cos(O[i][j] - D[i] + D[j])
+        if k==i:
+            return V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j])
+        if k==j:
+            return V[i] * Y[i][j] * cos(O[i][j] - D[i] + D[j])
+        else:
+            return 0
+
+    def dQi_dDk(self,V,Y,O,D,i,j,k):
+        # Equation to devivate on Dk:
+        # V[i] * V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j])
+
+        if i==j:
+            return 0
+        if k==i:
+            return -V[i] * V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j])
+        if k==j:
+            return V[i] * V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j])
+        else:
+            return 0
+
+    def dQi_dVk(self, V, Y, O, D, i, j, k):
+        """Equation to devivate on Vk:
+        V[i] * V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j])"""
+
+        if i == j and k == i:
+            return 2 * V[i] * Y[i][i] * sin(O[i][i])
+        if k == i:
+            return V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j])
+        if k == j:
+            return V[i] * Y[i][j] * sin(O[i][j] - D[i] + D[j])
+        else:
+            return 0
+
     def PFequations(self):
         buses = self.buses
         Y = self.Ymag
@@ -67,13 +120,13 @@ class PowerSystem:
         Qnr = self.Qnr
         V = [buses[i].v for i in range(n)]
         D = [buses[i].d for i in range(n)]
-        Peq = np.full(n, -1)
+        Peq = np.full(n, -1.)
 
         for i in Pnr:
             Peq[i] = sum(V[i] * V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j]) for j in range(n))
 
         PQk = [i for i in Peq if i != -1]
-        Qeq = np.full(n, -1)
+        Qeq = np.full(n, -1.)
         for i in Qnr:
             Qeq[i] = -sum(V[i] * V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j]) for j in range(n))
 
@@ -88,39 +141,58 @@ class PowerSystem:
         n = self.n
         Pnr = self.Pnr
         Qnr = self.Qnr
+        Dnr=Pnr
+        Vnr=Qnr
         V = [buses[i].v for i in range(n)]
         D = [buses[i].d for i in range(n)]
 
         jacobian = []
         for i in Pnr:
             dProws = []
-            for i in Pnr:
-                dPi_dDi=sum(V[i] * V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j]) for j in range(n) if i!=j)
+            for k in Dnr:
+                dPi_dDi=sum(self.dPi_dDk(V, Y, O, D, i, j, k) for j in range(n))
                 dProws.append(dPi_dDi)
 
-            for i in Qnr:
-                dPi_dVi=sum(V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j]) for j in range(n) if i!=j)
-                dPi_dVi+=2*V[i] * Y[i][i] * sin(O[i][i])
+            for k in Qnr:
+                dPi_dVi=sum(self.dPi_dVk(V, Y, O, D, i, j, k) for j in range(n))
                 dProws.append(dPi_dVi)
 
             jacobian.append(dProws)
 
         for i in Qnr:
             dQrows = []
-            for i in Pnr:
-                dQi_dDi=sum(V[i]*V[j]*Y[i][j]*cos(O[i][j]-D[i]+D[j]) for j in range(n) if i!=j)
+            for k in Pnr:
+                dQi_dDi=-sum(self.dQi_dDk(V, Y, O, D, i, j, k) for j in range(n))
                 dQrows.append(dQi_dDi)
 
-            for i in Qnr:
-                dQi_dVi=-sum(V[j]*Y[i][j]*sin(O[i][j]-D[i]+D[j]) for j in range(n) if i!=j)
-                dQi_dVi-=2*V[i]*sin(O[i][i])
+            for k in Qnr:
+                dQi_dVi=-sum(self.dQi_dVk(V, Y, O, D, i, j, k) for j in range(n))
                 dQrows.append(dQi_dVi)
 
             jacobian.append(dQrows)
 
         self.jacobian=np.array(jacobian)
 
+    def numeric(self):
+        from copy import deepcopy
+        def f(i, eps, d_or_v):
+            backup = deepcopy(self.buses)
+            if d_or_v == 'v':
+                self.buses[i].v += eps
+            else:
+                self.buses[i].d += eps
+            self.PFequations()
+            self.buses = deepcopy(backup)
+            return np.array(self.PQk)
 
+        eps = 1e-5
+        jacobian = []
+        for i in self.Pnr:
+            jacobian.append((f(i, eps / 2, 'd') - f(i, -eps / 2, 'd')) / eps)
+        for i in self.Qnr:
+            jacobian.append((f(i, eps / 2, 'v') - f(i, -eps / 2, 'b')) / eps)
+
+        self.numericJacobian = np.array(jacobian).transpose()
     """
         # Calculate all power flow equations, not just the ones needed
         dPi_dDi=[]
@@ -173,6 +245,8 @@ class PowerSystem:
         # print(np.around(self.Ybus,2))
         print("Jacobian:")
         print(np.around(self.jacobian, 2))
+        print("Numeric Jacobian:")
+        print(np.around(self.numericJacobian, 2))
         print("Net injections:")
         c = 0
         PQk = self.PQk
