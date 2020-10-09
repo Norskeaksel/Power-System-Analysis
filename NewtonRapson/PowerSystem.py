@@ -1,3 +1,4 @@
+#Test commit from pycharm
 import numpy as np
 from math import *
 
