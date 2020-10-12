@@ -1,8 +1,11 @@
 import importlib
+import logging
 from NewtonRapson import PowerSystem
 
 importlib.reload(PowerSystem)
 from NewtonRapson.PowerSystem import *
+
+open('Results.txt', 'w').close()
 
 def z(r, x):
     return complex(r, x)

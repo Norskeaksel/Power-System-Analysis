@@ -1,9 +1,10 @@
 import numpy as np
 from math import *
 
-
-# def round_expr(expr, num_digits):
-#    return expr.xreplace({n : round(n, num_digits) for n in expr.atoms(sy.Number)})
+def fprint(*args, **kwargs):
+    print(*args, **kwargs)
+    with open('Results.txt','a') as file:
+        print(*args, **kwargs, file=file)
 
 class Bus:
     def __init__(self, p=0.0, q=0.0, v=1, d=0):
@@ -236,33 +237,33 @@ class PowerSystem:
         self.numeric()
 
     def printMissmatchVector(self):
-        print('\nMissmatch Vector')
+        fprint('\nMissmatch Vector')
         c = 0
         deltaPQ = self.PQsch - self.PQk
         for i in self.Pnr:
-            print('\u0394P', i," = ", deltaPQ[c], sep="")
+            fprint('Delta P', i," = ", deltaPQ[c], sep="")
             c += 1
 
         for i in self.Qnr:
-            print('\u0394P', i, " = ", deltaPQ[c], sep="")
+            fprint('Delta P', i, " = ", deltaPQ[c], sep="")
             c += 1
 
     def printCorrectionVector(self):
-        print('\nCorrection Vector:')
+        fprint('\nCorrection Vector:')
         try:
             DVk = self.DVk
             c = 0
             for i in self.Pnr:
-                print('\u0394D', i, " = ", DVk[c], sep="")
+                fprint('Delta D', i, " = ", DVk[c], sep="")
                 c += 1
 
             for i in self.Pnr:
-                print('\u0394V', i, " = ", DVk[c], sep="")
+                fprint('Delta V', i, " = ", DVk[c], sep="")
                 c += 1
         except:
-            print('Unknown')
+            fprint('Unknown')
 
-        print()
+        fprint()
 
     def addLines(self, extra):
         self.lines.update(extra)
@@ -273,18 +274,18 @@ class PowerSystem:
         self.buildYbus()
 
     def print(self, itNr,showNumeric=False):
-        # print(len(self.lines),"lines",len(self.buses),"buses. Admittance matrix:")
-        # print(np.around(self.Ybus,2))
-        print("ITTERATION NR:", itNr)
-        print("Jacobian:")
-        print(self.jacobian, '\n')
+        # fprint(len(self.lines),"lines",len(self.buses),"buses. Admittance matrix:")
+        # fprint(np.around(self.Ybus,2))
+        fprint("ITTERATION NR:", itNr)
+        fprint("Jacobian:")
+        fprint(self.jacobian, '\n')
         if showNumeric:
-            print("Numeric Jacobian:")
-            print(self.numericJacobian, '\n')
+            fprint("Numeric Jacobian:")
+            fprint(self.numericJacobian, '\n')
 
-        print('Net injections:')
+        fprint('Net injections:')
         for i in self.buses:
-            print("bus", i, self.buses[i])
+            fprint("bus", i, self.buses[i])
 
         self.printMissmatchVector()
         self.printCorrectionVector()
