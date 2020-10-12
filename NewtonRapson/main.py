@@ -16,10 +16,10 @@ def buildBuses(P, Q, V, D):
     return buses
 
 # defining the Ybus elements
-r12 = 0.05
+r12 = 0.1
 x12 = 0.2
 r13 = 0.05
-x13 = 0.1
+x13 = 0.25
 r23 = 0.05
 x23 = 0.15
 lines = {}
@@ -63,4 +63,8 @@ buses = buildBuses(P, Q, V, D)
 PQsch=np.array([P0sch,P1sch,Q0sch,Q1sch])
 slackbus=2
 PS = PowerSystem(lines, buses,slackbus,X,Pnr,Qnr,PQsch)
-PS.iteration()
+final=4
+for i in range(1,final+1):
+    PS.iteration(i)
+    PS.print(i)
+
