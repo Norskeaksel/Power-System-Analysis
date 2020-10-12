@@ -1,10 +1,17 @@
 import numpy as np
 from math import *
+import importlib
+from NewtonRapson import settings
+importlib.reload(settings)
+from NewtonRapson.settings import *
 
 def fprint(*args, **kwargs):
+    if noPrint:
+        return
     print(*args, **kwargs)
-    with open('Results.txt','a') as file:
+    with open('Results.txt', 'a') as file:
         print(*args, **kwargs, file=file)
+
 
 class Bus:
     def __init__(self, p=0.0, q=0.0, v=1, d=0):
@@ -26,7 +33,8 @@ class Line:
 
 
 class PowerSystem:
-    def __init__(self, lines: dict, buses: dict, slackbus: int, X: list, Pnr: list, Qnr: list, PQsch: np.array, useNumeric = False):
+    def __init__(self, lines: dict, buses: dict, slackbus: int, X: list, Pnr: list, Qnr: list, PQsch: np.array,
+                 useNumeric=False):
         self.buses = buses
         self.lines = lines
         self.n = len(buses)
@@ -38,9 +46,19 @@ class PowerSystem:
         self.deltaPQ = PQsch
         self.buildYbus()
         self.PFequations()
-        self.buildJacobian()
-        self.numeric(useNumeric)
-        self.print(0)
+
+        fprint("ITERATION NR: 0")
+        fprint("Ybus magnitude:")
+        fprint(self.Ymag, '\n')
+        fprint("Ybus angles:")
+        fprint(self.Ytheta, '\n')
+        fprint('Net injections:')
+        for i in self.buses:
+            fprint("bus", i, self.buses[i])
+
+        fprint()
+        self.printMissmatchVector()
+        fprint()
 
     def buildYbus(self):
         n = self.n
@@ -74,18 +92,19 @@ class PowerSystem:
 
         for i in Pnr:
             Peq[i] = sum(V[i] * V[j] * Y[i][j] * cos(O[i][j] - D[i] + D[j]) for j in range(n))
+            buses[i].p = Peq[i]
 
-        #buses[s].p = sum(V[s] * V[j] * Y[s][j] * cos(O[s][j] - D[s] + D[j]) for j in range(n))
+        buses[s].p = sum(V[s] * V[j] * Y[s][j] * cos(O[s][j] - D[s] + D[j]) for j in range(n))
 
         PQk = [i for i in Peq if i != -1]
         Qeq = np.full(n, -1.)
         for i in Qnr:
             Qeq[i] = -sum(V[i] * V[j] * Y[i][j] * sin(O[i][j] - D[i] + D[j]) for j in range(n))
+            buses[i].q = Qeq[i]
 
-        #buses[s].q = -sum(V[s] * V[j] * Y[s][j] * sin(O[s][j] - D[s] + D[j]) for j in range(n))
+        buses[s].q = -sum(V[s] * V[j] * Y[s][j] * sin(O[s][j] - D[s] + D[j]) for j in range(n))
 
         PQk.extend([i for i in Qeq if i != -1])
-
         self.PQk = PQk
 
     def dPi_dDk(self, V, Y, O, D, i, j, k):
@@ -179,8 +198,8 @@ class PowerSystem:
 
         self.jacobian = np.array(jacobian)
 
-    def numeric(self,useNumeric=False):
-        if useNumeric==False:
+    def numeric(self, useNumeric=False):
+        if useNumeric == False:
             return
         from copy import deepcopy
         def f(i, eps, d_or_v):
@@ -202,81 +221,38 @@ class PowerSystem:
 
         self.numericJacobian = np.array(jacobian).transpose()
 
-
-    def iteration(self, itNr):
-        PQsch = self.PQsch
-        PQk = self.PQk
-        buses = self.buses
-        n = self.n
-        s=self.slackbus
-        deltaPQ = PQsch - PQk
-        DVk = np.linalg.solve(self.jacobian, deltaPQ)
-        c = 0
-        for i in self.Pnr:
-            buses[i].p = PQk[c]
-            buses[i].d += DVk[c]
-            c += 1
-
-        for i in self.Qnr:
-            buses[i].q = PQk[c]
-            buses[i].v += DVk[c]
-            c += 1
-
-        V = [buses[i].v for i in range(n)]
-        D = [buses[i].d for i in range(n)]
-        Y = self.Ymag
-        O = self.Ytheta
-
-        buses[s].p = sum(V[s] * V[j] * Y[s][j] * cos(O[s][j] - D[s] + D[j]) for j in range(n))
-        buses[s].q = -sum(V[s] * V[j] * Y[s][j] * sin(O[s][j] - D[s] + D[j]) for j in range(n))
-
-        self.DVk = DVk
-        self.buses = buses
-        self.PFequations()
-        self.buildJacobian()
-        self.numeric()
-
     def printMissmatchVector(self):
-        fprint('\nMissmatch Vector')
+        fprint('Missmatch Vector:')
         c = 0
         deltaPQ = self.PQsch - self.PQk
         for i in self.Pnr:
-            fprint('Delta P', i," = ", deltaPQ[c], sep="")
+            fprint('Delta P', i, " = ", deltaPQ[c], sep="")
             c += 1
 
         for i in self.Qnr:
             fprint('Delta P', i, " = ", deltaPQ[c], sep="")
             c += 1
 
-    def printCorrectionVector(self):
-        fprint('\nCorrection Vector:')
-        try:
-            DVk = self.DVk
-            c = 0
-            for i in self.Pnr:
-                fprint('Delta D', i, " = ", DVk[c], sep="")
-                c += 1
+        fprint()
 
-            for i in self.Pnr:
-                fprint('Delta V', i, " = ", DVk[c], sep="")
-                c += 1
-        except:
-            fprint('Unknown')
+    def printCorrectionVector(self):
+        fprint('Correction Vector:')
+        DVk = self.DVk
+        c = 0
+        for i in self.Pnr:
+            fprint('Delta D', i, " = ", DVk[c], sep="")
+            c += 1
+
+        for i in self.Pnr:
+            fprint('Delta V', i, " = ", DVk[c], sep="")
+            c += 1
 
         fprint()
 
-    def addLines(self, extra):
-        self.lines.update(extra)
-
-    def addBus(self, extra):
-        self.buses.update(extra)
-        self.n += len(extra)
-        self.buildYbus()
-
-    def print(self, itNr,showNumeric=False):
+    def print(self, itNr, showNumeric=False):
         # fprint(len(self.lines),"lines",len(self.buses),"buses. Admittance matrix:")
         # fprint(np.around(self.Ybus,2))
-        fprint("ITTERATION NR:", itNr)
+        fprint("ITERATION NR:", itNr)
         fprint("Jacobian:")
         fprint(self.jacobian, '\n')
         if showNumeric:
@@ -287,5 +263,44 @@ class PowerSystem:
         for i in self.buses:
             fprint("bus", i, self.buses[i])
 
+        fprint()
         self.printMissmatchVector()
         self.printCorrectionVector()
+        fprint()
+
+    def iteration(self, itNr):
+        self.buildJacobian()
+        self.numeric()
+
+        PQsch = self.PQsch
+        PQk = self.PQk
+        buses = self.buses
+        n = self.n
+        s = self.slackbus
+        deltaPQ = PQsch - PQk
+        DVk = np.linalg.solve(self.jacobian, deltaPQ)
+        c = 0
+        for i in self.Pnr:
+            # buses[i].p = PQk[c]
+            buses[i].d += DVk[c]
+            c += 1
+
+        for i in self.Qnr:
+            # buses[i].q = PQk[c]
+            buses[i].v += DVk[c]
+            c += 1
+
+        V = [buses[i].v for i in range(n)]
+        D = [buses[i].d for i in range(n)]
+
+        self.DVk = DVk
+        self.buses = buses
+        self.PFequations()
+
+    def addLines(self, extra):
+        self.lines.update(extra)
+
+    def addBus(self, extra):
+        self.buses.update(extra)
+        self.n += len(extra)
+        self.buildYbus()
