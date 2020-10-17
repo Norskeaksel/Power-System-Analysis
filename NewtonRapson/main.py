@@ -206,4 +206,4 @@ if Task3:
         if calcOldStart==0 and calcFlatStart==0:
             break
 
-print("All done")
+print("All done") #Can save results and plots by manually aborting the program at this line for some reason
