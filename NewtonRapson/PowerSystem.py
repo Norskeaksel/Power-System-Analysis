@@ -6,11 +6,10 @@ importlib.reload(settings)
 from NewtonRapson.settings import *
 
 def fprint(*args, **kwargs):
-    if noPrint:
-        return
-    print(*args, **kwargs)
-    with open('Results.txt', 'a') as file:
-        print(*args, **kwargs, file=file)
+    if Task1:
+        print(*args, **kwargs)
+        with open('Results.txt', 'a') as file:
+            print(*args, **kwargs, file=file)
 
 
 class Bus:

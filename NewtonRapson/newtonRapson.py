@@ -1,7 +1,6 @@
 import importlib
 import shutil
 import os
-import matplotlib as plt
 
 from NewtonRapson import PowerSystem
 
@@ -19,7 +18,7 @@ def buildBuses(P, Q, V, D):
     return buses
 
 
-def newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch):
+def newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch,logResults=False):
 
     buses = buildBuses(P, Q, V, D)
 
@@ -33,14 +32,19 @@ def newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmat
         maxActiveDeviation = max(abs(P[j] - PS.buses[j].p) for j in Pnr)
         maxReactiveDeviation = max(abs(Q[j] - PS.buses[j].q) for j in Qnr)
         maxEffectDeviation = max(maxActiveDeviation, maxReactiveDeviation)
-        if lastEffectDeviation < maxEffectDeviation:
-            fprint("Algorithm not convergin with the following load:")
-            fprint(buses)
-            break
+        if lastEffectDeviation <= maxEffectDeviation:
+            fprint("Algorithm not convergin with the following flatLoad:")
+            for i in buses:
+                fprint(buses[i])
+            return -1
         if maxEffectDeviation < allowedMissmatch:
             break
 
+        lastEffectDeviation = maxEffectDeviation
 
-    filename = os.path.basename('Results.txt')
-    dest = os.path.join('NewtonRapson', filename)
-    shutil.move('Results.txt', dest)
+    if logResults:
+        filename = os.path.basename('ResultsTask1.txt')
+        dest = os.path.join('NewtonRapson', filename)
+        shutil.move('Results.txt', dest)
+
+    return buses
