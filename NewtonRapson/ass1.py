@@ -99,8 +99,8 @@ if Task2:
             plt.xlabel('Active flatLoad [pu]')
             plt.title('Previous start Voltage given active system load')
             plt.legend()
-            filename = os.path.basename('VprevActive.png')
-            dest = os.path.join('', filename)
+            filename = os.path.basename('//VprevActive.png')
+            dest = os.path.join(assignmentName, filename)
             plt.savefig(dest) #Not working
             plt.show()
             calcOldStart = False
@@ -117,8 +117,8 @@ if Task2:
             plt.xlabel('Active flatLoad [pu]')
             plt.title('Flat start Voltage given active system load')
             plt.legend()
-            filename = os.path.basename('VflatActive.png')
-            dest = os.path.join('', filename)
+            filename = os.path.basename('//VflatActive.png')
+            dest = os.path.join(assignmentName, filename)
             plt.savefig(dest) #Not working
             plt.show()
             calcFlatStart = False
@@ -174,8 +174,8 @@ if Task3:
             plt.xlabel('Reactive flatLoad [pu]')
             plt.title('Previous start Voltage given reactive system load')
             plt.legend()
-            filename = os.path.basename('VprevReactive.png')
-            dest = os.path.join('', filename)
+            filename = os.path.basename('//VprevReactive.png')
+            dest = os.path.join(assignmentName, filename)
             plt.savefig(dest) #Not working
             plt.show()
             calcOldStart = False
@@ -192,8 +192,8 @@ if Task3:
             plt.xlabel('Reactive flatLoad [pu]')
             plt.title('Flat start Voltage given reactive system load')
             plt.legend()
-            filename = os.path.basename('VflatReactive.png')
-            dest = os.path.join('', filename)
+            filename = os.path.basename('//VflatReactive.png')
+            dest = os.path.join(assignmentName, filename)
             plt.savefig(dest) #Not working
             plt.show()
             calcFlatStart = False

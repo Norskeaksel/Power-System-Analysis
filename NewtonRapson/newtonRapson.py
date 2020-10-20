@@ -3,11 +3,11 @@ import shutil
 import os
 
 from NewtonRapson import PowerSystem
-
 importlib.reload(PowerSystem)
 from NewtonRapson.PowerSystem import *
 
-open('Results.txt', 'w').close()
+if Task1:
+    open('ResultsTask1.txt', 'w').close()
 
 
 def buildBuses(P, Q, V, D):
