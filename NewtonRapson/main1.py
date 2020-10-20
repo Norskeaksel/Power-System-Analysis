@@ -3,10 +3,6 @@ from NewtonRapson import newtonRapson
 
 importlib.reload(newtonRapson)
 from NewtonRapson.newtonRapson import *
-from NewtonRapson import settings
-
-importlib.reload(settings)
-from NewtonRapson.settings import *
 from matplotlib import pyplot as plt
 
 
@@ -60,7 +56,7 @@ D = np.array([d0, d1, d2])
 
 slackbus = 2
 allowedMissmatch = 1e-3
-buses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch,True)
+buses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
 
 # I assume we are to plot the voltage as a function of active power demand as that's whats changing
 if Task2:

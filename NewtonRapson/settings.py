@@ -1,5 +1,5 @@
 # Do not let Task2 or Task3 be true if you set Task1 to be true
-Task1 = True
+Task1 = 1
 
 Task2 = 0
 Task3 = 0

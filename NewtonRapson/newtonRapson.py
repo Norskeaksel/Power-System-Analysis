@@ -18,7 +18,7 @@ def buildBuses(P, Q, V, D):
     return buses
 
 
-def newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch,logResults=False):
+def newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch):
 
     buses = buildBuses(P, Q, V, D)
 
@@ -42,7 +42,7 @@ def newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmat
 
         lastEffectDeviation = maxEffectDeviation
 
-    if logResults:
+    if Task1:
         filename = os.path.basename('ResultsTask1.txt')
         dest = os.path.join('NewtonRapson', filename)
         shutil.move('Results.txt', dest)
