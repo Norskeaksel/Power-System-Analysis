@@ -59,7 +59,7 @@ V = np.array([v0, v1, v2])
 D = np.array([d0, d1, d2])
 
 slackbus = 2
-allowedMissmatch = 1e-5
+allowedMissmatch = 1e-3
 buses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch,True)
 
 # I assume we are to plot the voltage as a function of active power demand as that's whats changing
