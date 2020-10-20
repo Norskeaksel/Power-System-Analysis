@@ -1,9 +1,10 @@
 import numpy as np
 from math import *
 import importlib
-from NewtonRapson import settings
-importlib.reload(settings)
-from NewtonRapson.settings import *
+from NewtonRapson import Settings1
+
+importlib.reload(Settings1)
+from NewtonRapson.Settings1 import *
 
 def fprint(*args, **kwargs):
     if Task1:

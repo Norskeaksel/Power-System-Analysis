@@ -55,7 +55,7 @@ V = np.array([v0, v1, v2])
 D = np.array([d0, d1, d2])
 
 slackbus = 2
-allowedMissmatch = 1e-3
+allowedMissmatch = 1e-5
 buses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
 
 # I assume we are to plot the voltage as a function of active power demand as that's whats changing
@@ -100,7 +100,7 @@ if Task2:
             plt.title('Previous start Voltage given active system load')
             plt.legend()
             filename = os.path.basename('VprevActive.png')
-            dest = os.path.join('NewtonRapson', filename)
+            dest = os.path.join('', filename)
             plt.savefig(dest) #Not working
             plt.show()
             calcOldStart = False
@@ -118,7 +118,7 @@ if Task2:
             plt.title('Flat start Voltage given active system load')
             plt.legend()
             filename = os.path.basename('VflatActive.png')
-            dest = os.path.join('NewtonRapson', filename)
+            dest = os.path.join('', filename)
             plt.savefig(dest) #Not working
             plt.show()
             calcFlatStart = False
@@ -175,7 +175,7 @@ if Task3:
             plt.title('Previous start Voltage given reactive system load')
             plt.legend()
             filename = os.path.basename('VprevReactive.png')
-            dest = os.path.join('NewtonRapson', filename)
+            dest = os.path.join('', filename)
             plt.savefig(dest) #Not working
             plt.show()
             calcOldStart = False
@@ -193,7 +193,7 @@ if Task3:
             plt.title('Flat start Voltage given reactive system load')
             plt.legend()
             filename = os.path.basename('VflatReactive.png')
-            dest = os.path.join('NewtonRapson', filename)
+            dest = os.path.join('', filename)
             plt.savefig(dest) #Not working
             plt.show()
             calcFlatStart = False

@@ -44,7 +44,7 @@ def newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmat
 
     if Task1:
         filename = os.path.basename('ResultsTask1.txt')
-        dest = os.path.join('NewtonRapson', filename)
+        dest = os.path.join(assignmentName, filename)
         shutil.move('Results.txt', dest)
 
     return buses
