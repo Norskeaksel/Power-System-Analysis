@@ -18,7 +18,7 @@ def buildBuses(P, Q, V, D):
     return buses
 
 
-def newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch):
+def CPF(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch,ab):
 
     buses = buildBuses(P, Q, V, D)
 
@@ -42,9 +42,9 @@ def newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmat
 
         lastEffectDeviation = maxEffectDeviation
 
-    if Task1:
+    if Task1 and assignmentName=="NewtonRapson":
         filename = os.path.basename('ResultsTask2.txt')
         dest = os.path.join(assignmentName, filename)
         shutil.move('Results.txt', dest)
 
-    return buses
+    return PS

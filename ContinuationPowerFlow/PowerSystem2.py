@@ -6,11 +6,18 @@ from ContinuationPowerFlow import Settings2
 importlib.reload(Settings2)
 from ContinuationPowerFlow.Settings2 import *
 
+
 def fprint(*args, **kwargs):
-    if Task1:
+    if Task1 and assignmentName == "NewtonRapson":
         print(*args, **kwargs)
         with open('Results.txt', 'a') as file:
             print(*args, **kwargs, file=file)
+
+
+def fprintResults(*args, **kwargs):
+    print(*args, **kwargs)
+    with open('Results.txt', 'a') as file:
+        print(*args, **kwargs, file=file)
 
 
 class Bus:
@@ -106,6 +113,17 @@ class PowerSystem:
 
         PQk.extend([i for i in Qeq if i != -1])
         self.PQk = PQk
+
+    def buildS(self):
+        Snr = list(set(self.Pnr).intersection(self.Qnr))
+        Seq = np.full(self.n, 0.j)
+        PQk = self.PQk
+        Psize = len(self.Pnr)
+        for i in Snr:
+            Seq[i] = PQk[i] + 1j * PQk[i + Psize]
+
+        S = [i for i in Seq if i != 0]
+        self.S = S
 
     def dPi_dDk(self, V, Y, O, D, i, j, k):
         """Equation to devivate on Dk:
@@ -296,6 +314,37 @@ class PowerSystem:
         self.DVk = DVk
         self.buses = buses
         self.PFequations()
+
+    def add_ab_to_jacobian(self, ba):
+        """ba: first half is the increase in active load, the second, the increase in reactive load"""
+        jacobian = np.c_[self.jacobian, ba]
+        jNrOfCol = jacobian.shape[1]
+        jacobian = np.r_[jacobian, [np.zeros(jNrOfCol)]]
+        jacobian[-1, -1] = 1
+        self.jacobian = jacobian
+
+    def buildPredictionVector(self):
+        jacobian = self.jacobian
+        zero = np.zeros(len(jacobian))
+        zero[-1] = 1
+        self.predictionVector = np.linalg.solve(jacobian, zero)
+        return self.predictionVector
+
+    def buildPredictionVector(self):
+        jacobian = self.jacobian
+        zero = np.zeros(len(jacobian))
+        zero[-1] = 1
+        self.predictionVector = np.linalg.solve(jacobian, zero)
+        return self.predictionVector
+
+    def takePredictionStep(self, step=0.3):
+        predictionVector = self.predictionVector
+        halfWay = len(predictionVector) // 2
+        newDeltas = [step * i for i in predictionVector[0:halfWay]]
+        newVoltages = [step * i for i in predictionVector[halfWay:]]
+        for i in range(halfWay):
+            self.buses[i].d = newDeltas[i]
+            self.buses[i].v = newVoltages[i]
 
     def addLines(self, extra):
         self.lines.update(extra)

@@ -1,13 +1,16 @@
 import importlib
 import os
-os.chdir("..") #Necesseary due to a Pycharm bug
-from ContinuationPowerFlow import newtonRapson2
 
-importlib.reload(newtonRapson2)
-from ContinuationPowerFlow.newtonRapson2 import *
+os.chdir("..")  # Necesseary due to a Pycharm bug
+from ContinuationPowerFlow import CPF
+
+importlib.reload(CPF)
+from ContinuationPowerFlow.CPF import *
 from matplotlib import pyplot as plt
-
-
+try:
+    open('ResultsTask1.txt', 'w').close()
+except:
+    pass
 def z(r, x):
     return complex(r, x)
 
@@ -48,7 +51,7 @@ X = [d0, d1, v0, v1]
 # defining which corresponding powerflow equations to use
 Pnr = [0, 1]
 Qnr = [0, 1]
-
+Snr = [0, 1]
 # defining the buses in the system
 
 P = np.array([P0sch, P1sch, P2sch])
@@ -58,16 +61,52 @@ D = np.array([d0, d1, d2])
 
 slackbus = 2
 allowedMissmatch = 1e-5
-buses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
 
-# I assume we are to plot the voltage as a function of active power demand as that's whats changing
+# define increase
+ba = [0.3, 0.7, 0, 0]
+
+PS = CPF(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch, ba)
+buses=PS.buses
+fprintResults("Task 1, Base case conditions assuming flat start:\n")
+for i in buses:
+    fprintResults("bus",i,buses[i])
+
+
+
+#Task 2
+PS.add_ab_to_jacobian(ba)
+predictionVector=PS.buildPredictionVector()
+fprintResults("\nTask 2, First prediction vector:",predictionVector,"meaning:")
+c=0
+for i in Pnr:
+    fprintResults("Delta D",i," = ",predictionVector[c],sep="")
+    c+=1
+
+for i in Qnr:
+    fprintResults("Delta V",i," = ", predictionVector[c],sep="")
+    c+=1
+
+fprintResults("Delta S", i," = ", predictionVector[c],'\n',sep="")
+
+#Task 3
+
+X = [d0, d1, v0, v1]
+
+filename = os.path.basename('ResultsAssignment2.txt')
+dest = os.path.join(assignmentName, filename)
+shutil.move('Results.txt', dest)
+
+PS.takePredictionStep()
+for i in buses:
+    fprintResults("bus",i,buses[i])
+
 if Task2:
-    buses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
+    buses = CPF(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
     deltaP = 0.2
     calcFlatStart = True
     calcOldStart = True
-    oldStartBuses=0
-    flatStartBuses=0
+    oldStartBuses = 0
+    flatStartBuses = 0
     newV = [buses[i].v for i in buses]
     newD = [buses[i].d for i in buses]
 
@@ -83,10 +122,10 @@ if Task2:
         PQsch[1] = P[1]
         load.append(sum(i for i in P))
         if calcOldStart:
-            oldStartBuses = newtonRapson(lines, X, PQsch, P, Q, newV, newD, Pnr, Qnr, slackbus, allowedMissmatch)
+            oldStartBuses = CPF(lines, X, PQsch, P, Q, newV, newD, Pnr, Qnr, slackbus, allowedMissmatch)
 
         if calcFlatStart:
-            flatStartBuses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
+            flatStartBuses = CPF(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
 
         try:
             oldBus1V.append(oldStartBuses[0].v)
@@ -94,7 +133,7 @@ if Task2:
             newV = [oldStartBuses[i].v for i in buses]
             newD = [oldStartBuses[i].d for i in buses]
         except:  # Algorithm not converging
-            oldLoad=[-load[i] for i in range(len(oldBus1V))]
+            oldLoad = [-load[i] for i in range(len(oldBus1V))]
             plt.plot(oldLoad, oldBus1V, label="Bus 1")
             plt.plot(oldLoad, oldBus2V, label="Bus 2")
             plt.ylabel('Voltage [pu]')
@@ -103,16 +142,16 @@ if Task2:
             plt.legend()
             filename = os.path.basename('VprevActive.png')
             dest = os.path.join('', filename)
-            plt.savefig(dest) #Not working
+            plt.savefig(dest)  # Not working
             plt.show()
             calcOldStart = False
-            oldStartBuses=Bus()
+            oldStartBuses = Bus()
 
         try:
             flatBus1V.append(flatStartBuses[0].v)
             flatBus2V.append(flatStartBuses[1].v)
         except:  # Algorithm not converging
-            flatLoad=[-load[i] for i in range(len(flatBus1V))]
+            flatLoad = [-load[i] for i in range(len(flatBus1V))]
             plt.plot(flatLoad, flatBus1V, label="Bus 1")
             plt.plot(flatLoad, flatBus2V, label="Bus 2")
             plt.ylabel('Voltage [pu]')
@@ -121,12 +160,12 @@ if Task2:
             plt.legend()
             filename = os.path.basename('VflatActive.png')
             dest = os.path.join('', filename)
-            plt.savefig(dest) #Not working
+            plt.savefig(dest)  # Not working
             plt.show()
             calcFlatStart = False
             flatStartBuses = Bus()
 
-        if calcOldStart==0 and calcFlatStart==0:
+        if calcOldStart == 0 and calcFlatStart == 0:
             break
 
 if Task3:
@@ -136,13 +175,13 @@ if Task3:
     Q = np.array([Q0sch, Q1sch, Q2sch])
     V = np.array([v0, v1, v2])
     D = np.array([d0, d1, d2])
-    buses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
+    buses = CPF(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
 
     deltaQ = 0.2
     calcFlatStart = True
     calcOldStart = True
-    oldStartBuses=0
-    flatStartBuses=0
+    oldStartBuses = 0
+    flatStartBuses = 0
     newV = [buses[i].v for i in buses]
     newD = [buses[i].d for i in buses]
 
@@ -158,10 +197,10 @@ if Task3:
         PQsch[3] = Q[1]
         load.append(sum(i for i in Q))
         if calcOldStart:
-            oldStartBuses = newtonRapson(lines, X, PQsch, P, Q, newV, newD, Pnr, Qnr, slackbus, allowedMissmatch)
+            oldStartBuses = CPF(lines, X, PQsch, P, Q, newV, newD, Pnr, Qnr, slackbus, allowedMissmatch)
 
         if calcFlatStart:
-            flatStartBuses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
+            flatStartBuses = CPF(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
 
         try:
             oldBus1V.append(oldStartBuses[0].v)
@@ -169,7 +208,7 @@ if Task3:
             newV = [oldStartBuses[i].v for i in buses]
             newD = [oldStartBuses[i].d for i in buses]
         except:  # Algorithm not converging
-            oldLoad=[-load[i] for i in range(len(oldBus1V))]
+            oldLoad = [-load[i] for i in range(len(oldBus1V))]
             plt.plot(oldLoad, oldBus1V, label="Bus 1")
             plt.plot(oldLoad, oldBus2V, label="Bus 2")
             plt.ylabel('Voltage [pu]')
@@ -178,16 +217,16 @@ if Task3:
             plt.legend()
             filename = os.path.basename('VprevReactive.png')
             dest = os.path.join('', filename)
-            plt.savefig(dest) #Not working
+            plt.savefig(dest)  # Not working
             plt.show()
             calcOldStart = False
-            oldStartBuses=Bus()
+            oldStartBuses = Bus()
 
         try:
             flatBus1V.append(flatStartBuses[0].v)
             flatBus2V.append(flatStartBuses[1].v)
         except:  # Algorithm not converging
-            flatLoad=[-load[i] for i in range(len(flatBus1V))]
+            flatLoad = [-load[i] for i in range(len(flatBus1V))]
             plt.plot(flatLoad, flatBus1V, label="Bus 1")
             plt.plot(flatLoad, flatBus2V, label="Bus 2")
             plt.ylabel('Voltage [pu]')
@@ -196,12 +235,12 @@ if Task3:
             plt.legend()
             filename = os.path.basename('VflatReactive.png')
             dest = os.path.join('', filename)
-            plt.savefig(dest) #Not working
+            plt.savefig(dest)  # Not working
             plt.show()
             calcFlatStart = False
             flatStartBuses = Bus()
 
-        if calcOldStart==0 and calcFlatStart==0:
+        if calcOldStart == 0 and calcFlatStart == 0:
             break
 
-print("All done") #Can save results and plots by manually aborting the program at this line for some reason
+print("All done")  # Can save results and plots by manually aborting the program at this line for some reason
