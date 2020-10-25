@@ -6,13 +6,11 @@ from ContinuationPowerFlow import Settings2
 importlib.reload(Settings2)
 from ContinuationPowerFlow.Settings2 import *
 
-
 def fprint(*args, **kwargs):
-    if Task1 and assignmentName == "NewtonRapson":
+    if Task1 and assignmentName=="NewtonRapson":
         print(*args, **kwargs)
         with open('Results.txt', 'a') as file:
             print(*args, **kwargs, file=file)
-
 
 def fprintResults(*args, **kwargs):
     print(*args, **kwargs)
@@ -53,6 +51,7 @@ class PowerSystem:
         self.deltaPQ = PQsch
         self.buildYbus()
         self.PFequations()
+        self.S=0
 
         fprint("ITERATION NR: 0")
         fprint("Ybus magnitude:")
@@ -115,15 +114,16 @@ class PowerSystem:
         self.PQk = PQk
 
     def buildS(self):
-        Snr = list(set(self.Pnr).intersection(self.Qnr))
+        Snr=list(set(self.Pnr).intersection(self.Qnr))
         Seq = np.full(self.n, 0.j)
-        PQk = self.PQk
-        Psize = len(self.Pnr)
+        PQk=self.PQk
+        Psize=len(self.Pnr)
         for i in Snr:
-            Seq[i] = PQk[i] + 1j * PQk[i + Psize]
+            Seq[i]=PQk[i]+1j*PQk[i+Psize]
 
         S = [i for i in Seq if i != 0]
-        self.S = S
+        self.S=S
+
 
     def dPi_dDk(self, V, Y, O, D, i, j, k):
         """Equation to devivate on Dk:
@@ -315,36 +315,68 @@ class PowerSystem:
         self.buses = buses
         self.PFequations()
 
-    def add_ab_to_jacobian(self, ba):
+    def CPFiteration(self,ba,oneCol):
+        self.buildJacobian()
+        self.extendJacobian(ba,oneCol)
+        PQsch = self.PQsch
+        PQk = self.PQk
+        buses = self.buses
+        n = self.n
+        s = self.slackbus
+        deltaPQ = PQsch - PQk
+        DVk = np.linalg.solve(self.jacobian, deltaPQ)
+        c = 0
+        for i in self.Pnr:
+            # buses[i].p = PQk[c]
+            buses[i].d += DVk[c]
+            c += 1
+
+        for i in self.Qnr:
+            # buses[i].q = PQk[c]
+            buses[i].v += DVk[c]
+            c += 1
+
+        V = [buses[i].v for i in range(n)]
+        D = [buses[i].d for i in range(n)]
+
+        self.DVk = DVk
+        self.buses = buses
+        self.PFequations()
+
+    def extendJacobian(self, ba, oneCol):
         """ba: first half is the increase in active load, the second, the increase in reactive load"""
-        jacobian = np.c_[self.jacobian, ba]
-        jNrOfCol = jacobian.shape[1]
-        jacobian = np.r_[jacobian, [np.zeros(jNrOfCol)]]
-        jacobian[-1, -1] = 1
-        self.jacobian = jacobian
+        jacobian=np.c_[ self.jacobian, ba ]
+        jNrOfCol=jacobian.shape[1]
+        jacobian=np.r_[jacobian,[np.zeros(jNrOfCol)]]
+        jacobian[-1, oneCol]=1
+        self.jacobian=jacobian
 
     def buildPredictionVector(self):
-        jacobian = self.jacobian
-        zero = np.zeros(len(jacobian))
-        zero[-1] = 1
-        self.predictionVector = np.linalg.solve(jacobian, zero)
+        jacobian=self.jacobian
+        zero=np.zeros(len(jacobian))
+        zero[-1]=1
+        self.predictionVector=np.linalg.solve(jacobian, zero)
         return self.predictionVector
 
     def buildPredictionVector(self):
-        jacobian = self.jacobian
-        zero = np.zeros(len(jacobian))
-        zero[-1] = 1
-        self.predictionVector = np.linalg.solve(jacobian, zero)
+        jacobian=self.jacobian
+        zero=np.zeros(len(jacobian))
+        zero[-1]=1
+        self.predictionVector=np.linalg.solve(jacobian, zero)
         return self.predictionVector
 
-    def takePredictionStep(self, step=0.3):
-        predictionVector = self.predictionVector
-        halfWay = len(predictionVector) // 2
-        newDeltas = [step * i for i in predictionVector[0:halfWay]]
-        newVoltages = [step * i for i in predictionVector[halfWay:]]
+    def takePredictionStep(self,ba,step=0.3):
+        predictionVector=self.predictionVector
+        self.PQsch-=step*ba
+        halfWay=len(predictionVector)//2
+        addDeltas=step*predictionVector[0:halfWay]
+        addVoltages=step*predictionVector[halfWay:]
         for i in range(halfWay):
-            self.buses[i].d = newDeltas[i]
-            self.buses[i].v = newVoltages[i]
+            self.buses[i].d+=addDeltas[i]
+            self.buses[i].v+=addVoltages[i]
+
+        self.PFequations() #Recalculate PF equations with new V and D
+
 
     def addLines(self, extra):
         self.lines.update(extra)

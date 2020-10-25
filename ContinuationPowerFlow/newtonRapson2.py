@@ -18,7 +18,7 @@ def buildBuses(P, Q, V, D):
     return buses
 
 
-def CPF(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch,ab):
+def newtonRapson2(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch, ab):
 
     buses = buildBuses(P, Q, V, D)
 
