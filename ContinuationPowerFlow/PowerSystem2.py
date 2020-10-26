@@ -51,7 +51,7 @@ class PowerSystem:
         self.deltaPQ = PQsch
         self.buildYbus()
         self.PFequations()
-        self.S=0
+        self.S=[]
 
         fprint("ITERATION NR: 0")
         fprint("Ybus magnitude:")
@@ -316,15 +316,15 @@ class PowerSystem:
         self.PFequations()
 
     def CPFiteration(self,ba,oneCol):
-        self.buildJacobian()
         self.extendJacobian(ba,oneCol)
         PQsch = self.PQsch
         PQk = self.PQk
         buses = self.buses
         n = self.n
         s = self.slackbus
-        deltaPQ = PQsch - PQk
-        DVk = np.linalg.solve(self.jacobian, deltaPQ)
+        deltaPQS = PQsch - PQk
+        deltaPQS = np.append(deltaPQS,0.0)
+        DVk = np.linalg.solve(self.jacobian, deltaPQS)
         c = 0
         for i in self.Pnr:
             # buses[i].p = PQk[c]
@@ -345,6 +345,7 @@ class PowerSystem:
 
     def extendJacobian(self, ba, oneCol):
         """ba: first half is the increase in active load, the second, the increase in reactive load"""
+        self.buildJacobian()
         jacobian=np.c_[ self.jacobian, ba ]
         jNrOfCol=jacobian.shape[1]
         jacobian=np.r_[jacobian,[np.zeros(jNrOfCol)]]
@@ -358,14 +359,7 @@ class PowerSystem:
         self.predictionVector=np.linalg.solve(jacobian, zero)
         return self.predictionVector
 
-    def buildPredictionVector(self):
-        jacobian=self.jacobian
-        zero=np.zeros(len(jacobian))
-        zero[-1]=1
-        self.predictionVector=np.linalg.solve(jacobian, zero)
-        return self.predictionVector
-
-    def takePredictionStep(self,ba,step=0.3):
+    def takePredictionStep(self,ba,step):
         predictionVector=self.predictionVector
         self.PQsch-=step*ba
         halfWay=len(predictionVector)//2

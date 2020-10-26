@@ -1,16 +1,16 @@
 import importlib
 import os
-
+try:
+    open('ResultsAssignment2.txt', 'w').close()
+except:
+    pass
 os.chdir("..")  # Necesseary due to a Pycharm bug
 from ContinuationPowerFlow import newtonRapson2
 
 importlib.reload(newtonRapson2)
 from ContinuationPowerFlow.newtonRapson2 import *
 from matplotlib import pyplot as plt
-try:
-    open('ResultsAssignment2.txt', 'w').close()
-except:
-    pass
+
 def z(r, x):
     return complex(r, x)
 
@@ -92,15 +92,15 @@ predictionVector=PS.buildPredictionVector()
 printPredictionVector(predictionVector,2)
 
 #Task 3
-
-PS.takePredictionStep(ba)
+step=0.3
+PS.takePredictionStep(ba,step)
 P=PS.PQsch[:len(PS.PQsch)//2]
 Q=PS.PQsch[len(PS.PQsch)//2:]
 # iterate until solution is found for new load:
 i=0
 while 1:
     i += 1
-    PS.iteration(i)
+    PS.CPFiteration(ba,oneCol)
     maxActiveDeviation = max(abs(P[j] - PS.buses[j].p) for j in Pnr)
     maxReactiveDeviation = max(abs(Q[j] - PS.buses[j].q) for j in Qnr)
     maxEffectDeviation = max(maxActiveDeviation, maxReactiveDeviation)
@@ -116,29 +116,34 @@ for i in buses:
     fprintResults("bus",i,buses[i])
     
 #Task 4
-PS.extendJacobian(ba,oneCol)
 predictionVector=PS.buildPredictionVector()
-printPredictionVector(predictionVector,4)
+printPredictionVector(predictionVector,len(X))
+
+#find step that corresponds with load with 30% increase
+step=-sum(P)*0.3
+newP=P-step*ba[:len(Pnr)]
+for idx,val in enumerate(newP):
+    PS.buses[idx].p=val
 
 #Task 5
-PS.takePredictionStep(ba)
+PS.takePredictionStep(ba,step)
+
 #find bus with larges rate of change
 maxV=0
 maxVIdx=0
-for idx,val in enumerate(predictionVector[len(predictionVector):]):
+for idx,val in enumerate(predictionVector[:-1]):
     if abs(val) > maxV:
-        maxV = val
+        maxV = abs(val)
         maxVIdx=idx
 
-fixedVoltage=PS.buses[maxVIdx].v
+oneCol=maxVIdx
 P=PS.PQsch[:len(PS.PQsch)//2]
 Q=PS.PQsch[len(PS.PQsch)//2:]
 
 i=0
 while 1:
     i += 1
-    PS.iteration(i)
-    PS.buses[maxVIdx].v=fixedVoltage
+    PS.CPFiteration(ba,oneCol)
     maxActiveDeviation = max(abs(P[j] - PS.buses[j].p) for j in Pnr)
     maxReactiveDeviation = max(abs(Q[j] - PS.buses[j].q) for j in Qnr)
     maxEffectDeviation = max(maxActiveDeviation, maxReactiveDeviation)
