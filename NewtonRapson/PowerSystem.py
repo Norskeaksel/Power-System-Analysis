@@ -230,7 +230,7 @@ class PowerSystem:
             c += 1
 
         for i in self.Qnr:
-            fprint('Delta P', i, " = ", deltaPQ[c], sep="")
+            fprint('Delta Q', i, " = ", deltaPQ[c], sep="")
             c += 1
 
         fprint()

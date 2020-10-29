@@ -216,29 +216,6 @@ class PowerSystem:
 
         self.jacobian = np.array(jacobian)
 
-    def numeric(self, useNumeric=False):
-        if useNumeric == False:
-            return
-        from copy import deepcopy
-        def f(i, eps, d_or_v):
-            backup = deepcopy(self.buses)
-            if d_or_v == 'v':
-                self.buses[i].v += eps
-            else:
-                self.buses[i].d += eps
-            self.PFequations()
-            self.buses = deepcopy(backup)
-            return np.array(self.PQk)
-
-        eps = 1e-5
-        jacobian = []
-        for i in self.Pnr:
-            jacobian.append((f(i, eps / 2, 'd') - f(i, -eps / 2, 'd')) / eps)
-        for i in self.Qnr:
-            jacobian.append((f(i, eps / 2, 'v') - f(i, -eps / 2, 'v')) / eps)
-
-        self.numericJacobian = np.array(jacobian).transpose()
-
     def printMissmatchVector(self):
         fprint('Missmatch Vector:')
         c = 0
@@ -288,7 +265,6 @@ class PowerSystem:
 
     def iteration(self, itNr):
         self.buildJacobian()
-        self.numeric()
 
         PQsch = self.PQsch
         PQk = self.PQk

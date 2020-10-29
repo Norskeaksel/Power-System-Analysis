@@ -9,7 +9,6 @@ from ContinuationPowerFlow import newtonRapson2
 
 importlib.reload(newtonRapson2)
 from ContinuationPowerFlow.newtonRapson2 import *
-from matplotlib import pyplot as plt
 
 def z(r, x):
     return complex(r, x)
@@ -77,7 +76,7 @@ allowedMissmatch = 1e-5
 # define increase
 ba = np.array([0.3, 0.7, 0, 0])
 
-PS = newtonRapson2(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch, ba)
+PS = newtonRapson2(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
 buses=PS.buses
 fprintResults("Task 1, Base case conditions assuming flat start:\n")
 for i in buses:
