@@ -33,7 +33,7 @@ def newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmat
         maxReactiveDeviation = max(abs(Q[j] - PS.buses[j].q) for j in Qnr)
         maxEffectDeviation = max(maxActiveDeviation, maxReactiveDeviation)
         if lastEffectDeviation <= maxEffectDeviation:
-            fprint("Algorithm not convergin with the following flatLoad:")
+            fprint("Algorithm not converging with the following flatLoad:")
             for i in buses:
                 fprint(buses[i])
             return -1

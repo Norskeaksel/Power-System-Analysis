@@ -4,29 +4,42 @@ from DecoupledPowerFlow import newtonRapson3
 importlib.reload(newtonRapson3)
 from DecoupledPowerFlow.newtonRapson3 import *
 
-def cout(buses):
-    for i in buses:
-        fprintResults("bus", i, buses[i])
-    fprintResults()
-
-def DPF(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch):
+def DPF(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch,taskNr,maxIteratins):
     buses = buildBuses(P, Q, V, D)
-    fprint("Task 2 initialize system:\n")
+    if taskNr==2:
+        fprint("Task 2 initialize system:\n")
+    elif taskNr==3:
+        fprint("Task 3 initialize system:\n")
+    elif taskNr==4:
+        fprint("Task 4 initialize system:\n")
     DPS = PowerSystem(lines, buses, slackbus, X, Pnr, Qnr, PQsch)
     DPS.buildJacobian()
-    fprint("Task 2a., primal FDPF solution:\n")
-    DPS2=primalDPF(deepcopy(DPS), allowedMissmatch)
+    if taskNr==2:
+        fprint("Task 2a., primal FDPF solution:\n")
+    elif taskNr==3:
+        fprint("Task 3, primal FDPF solution:\n")
+    elif taskNr==4:
+        fprint("Task 4 primal FDPF solution:\n")
+    DPS2,c2=primalDPF(deepcopy(DPS), allowedMissmatch,maxIteratins)
+    if taskNr==2:
+        fprint("Task 2b., dual FDPF solution:\n")
+    elif taskNr==3:
+        fprint("Task 3, dual FDPF solution:\n")
+    elif taskNr==4:
+        fprint("Task 4, dual FDPF solution:\n")
+    DPS3,c3=dualDPF(deepcopy(DPS),allowedMissmatch,maxIteratins)
+    c4="NaN"
+    DPS4=None
+    if taskNr==2:
+        fprint("Task 2c., standard FDPF solution:\n")
+        DPS4,c4=standardDPF(deepcopy(DPS),allowedMissmatch,maxIteratins)
 
-    fprint("Task 2b., dual FDPF solution:\n")
-    DPS3=dualDPF(deepcopy(DPS),allowedMissmatch)
+    return [DPS2,DPS3,DPS4],[c2,c3,c4]
 
-    fprint("Task 2c., standard FDPF solution:\n")
-    DPS4=standardDPF(deepcopy(DPS),allowedMissmatch)
-    return DPS2,DPS3
-
-def primalDPF(DPS, allowedMissmatch):
+def primalDPF(DPS, allowedMissmatch,maxIteratins):
     c=0
-    while 1 and c<10:
+    oldDeviation = 1e5
+    while 1 and c<maxIteratins:
         c+=1
         PQsch = DPS.PQsch
         PQk = DPS.PQk
@@ -54,12 +67,17 @@ def primalDPF(DPS, allowedMissmatch):
         DPS.print(c)
         if maxDeviation < allowedMissmatch:
             break
+        elif oldDeviation < maxDeviation:
+            fprint("Algorithm not converging with following load:\n", DPS.PQsch)
+            c = -1
+            break
+        oldDeviation = maxDeviation+0.1
+    return DPS,c
 
-    return DPS
-
-def dualDPF(DPS, allowedMissmatch):
+def dualDPF(DPS, allowedMissmatch,maxIteratins):
     c=0
-    while 1 and c<10:
+    oldDeviation=1e5
+    while 1 and c<maxIteratins:
         c+=1
         PQsch = DPS.PQsch
         PQk = DPS.PQk
@@ -87,12 +105,18 @@ def dualDPF(DPS, allowedMissmatch):
         DPS.print(c)
         if maxDeviation < allowedMissmatch:
             break
+        elif oldDeviation < maxDeviation:
+            fprint("Algorithm not converging with following load:\n", DPS.PQsch)
+            c = -1
+            break
+        oldDeviation = maxDeviation+0.1
 
-    return DPS
+    return DPS,c
 
-def standardDPF(DPS, allowedMissmatch):
+def standardDPF(DPS, allowedMissmatch,maxIteratins):
     c = 0
-    while 1 and c < 10:
+    oldDeviation=1e5
+    while 1 and c < maxIteratins:
         c += 1
         PQsch = DPS.PQsch
         PQk = DPS.PQk
@@ -117,3 +141,9 @@ def standardDPF(DPS, allowedMissmatch):
         DPS.print(c)
         if maxDeviation < allowedMissmatch:
             break
+        elif oldDeviation<maxDeviation:
+            fprint("Algorithm not converging with following load:\n",DPS.PQsch)
+            c=-1
+            break
+        oldDeviation = maxDeviation+0.1
+    return DPS,c
