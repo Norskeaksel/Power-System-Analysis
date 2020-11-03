@@ -13,23 +13,31 @@ This assumption means that we can linearize the sine and cosine terms in the AC 
 With these assumtions, our new DC power flow equation become:
 Pi=sum(Bij*(Di-Dj) for j in range(n)). The term Bij*(Di-Dj) = the power flow Pij
 
-For our system the Y matrix becomes:
+With the buildDCY function we get that the Y matrix in our system is:
 [[ 15.  -5. -10.]
  [ -5.   9.  -4.]
  [-10.  -4.  18.]]
 
-Task 2. The voltage angles in the load flow solutions are:
+Task 2:
+The voltage angles in the load flow solutions are:
 [-0.68295455 -0.67386364 -0.5625      0.        ]
 The power flows are given by the following matrix:
 [[-1.25       -0.04545455 -1.20454545 -0.        ]
  [ 0.04545455 -0.4        -0.44545455 -0.        ]
  [ 1.20454545  0.44545455 -0.6        -2.25      ]
  [ 0.          0.          2.25        2.25      ]]
-From this matrix we see the following power flows:
+From this matrix we see power generation/demand in each bus as well as the following power flows:
 P21 = 0.04545454545454575
 P31 = 1.2045454545454537
 P32 = 0.4454545454545449
 P43 = 2.2499999999999987
 
+Task 3:
 Power Transfer Distribution Factors (PTDF) represents the change in real power transfer that occurs on transmission lines when their corresponding buses change their power injections.
 Each row in the PTDF corresponds to a line and each column corresponds to a bus
+PTDF MATRIX:
+         node 0      node 1      node 2      node 3      
+line 0-1 -0.1818     0.4545      0.0000      0.0000      
+line 0-2 -0.8182     -0.4545     -0.0000     0.0000      
+line 1-2 -0.1818     -0.5455     -0.0000     -0.0000     
+line 2-3 -1.0000     -1.0000     -1.0000     -0.0000     

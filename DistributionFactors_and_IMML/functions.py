@@ -4,19 +4,29 @@ def fprint(*args, **kwargs):
     with open('ResultsAssignment4.txt', 'a') as file:
         print(*args, **kwargs, file=file)
 
-def buildDCY(lines,n):
+def build_ik(keys,n):
+    ik = -np.ones((n, n), dtype=int)
+    for nr, (i, k) in enumerate(keys):
+        ik[i, k] = nr
+    return ik
+
+def buildDCY(lines, n):
+    Z=np.zeros((n, n))
     Y = np.zeros((n, n))
     for key in lines:
         i = key[0]
         j = key[1]
         if i != j:
-            Y[i][j] = 1 / lines[i, j]
-            Y[j][i] = 1 / lines[i, j]
+            #Z[i,j] = lines[i, j]
+            #Z[j,i] = lines[i, j]
+            Y[i,j] = 1 / lines[i, j]
+            Y[j,i] = 1 / lines[i, j]
 
     for i in range(n):
-        Y[i][i] = -Y[i].sum()
+        #Z[i, i] = -Z[i].sum()
+        Y[i,i] = -Y[i].sum()
 
-    return Y
+    return Y#,Z
 
 def powerFlows(Y, angles,P, print=False):
     n=Y.shape
@@ -32,30 +42,50 @@ def powerFlows(Y, angles,P, print=False):
                     fprint('P',i+1,j+1,' = ',PF[i, j],sep="")
     return PF
 
-def buildPTDF(Z,b,ik):
-    nrOfbuses=len(Z)
+def build_b(Z,keys,n):
+    b=np.zeros((n,n))
+    for row,(i,k) in enumerate(keys):
+        b[row,i]=(1/Z[i,k])
+
+    b=np.maximum(b, b.transpose()) #make b symetrical
+    return b
+
+def buildPTDF(Z,B,ik,n):
+    """
+    The PTDF value from node n for the line between nodes i and k can then be calculated with PTDF_ik,n= B_ik(Zbus_in-Zbus_kn)
+    """
+    nrOfbuses=n
     nrOfLines=len(ik)
     PTDF = np.zeros((nrOfLines,nrOfbuses))
     for i in range(nrOfLines):
         for k in range(nrOfLines):
-            row = ik(i, k)
-            if row!=0:
+            row = ik[i, k]
+            if row!=-1:
                 for n in range(nrOfbuses):
-                    PTDF[row, n] = b(i, k) * (Z[i, n] - Z[k, n])
+                        PTDF[row, n] = B[i, k] * (Z[i, n] - Z[k, n])
     return PTDF
 
-def printPTDF(PTDF,ik):
-    lines=[str(line[0])+'-'+str(line[1]) for line in ik]
+def printPTDF(PTDF,keys):
+    lines=[]
+    for i,k in keys:
+        lines.append(f"line {i}-{k} ")
     fprint('PTDF MATRIX:')
-    for line in range(PTDF.shape[1]):
-        if line == 0:
+    first=1
+    for nodeNr in range(PTDF.shape[1]):
+        if first:
             fprint('         ',end="")
-        else:
-            fprint('node', line,'    ',end="")
+            first=0
+        fprint('node', nodeNr,end='      ')
 
     fprint()
-    for line in range(PTDF.shape[0]):
-        fprint('line', lines[line], end="")
-        for node in PTDF.shape[1]:
-            fprint(PTDF[line, node])
+    for lineNr in range(len(lines)):
+        fprint(lines[lineNr], end="")
+        for node in range(PTDF.shape[1]):
+            val=PTDF[lineNr, node]
+            space = "    "
+            if val>=0:
+                space = "     "
+            fprint("%4.4f" %(PTDF[lineNr, node]),space, end="")
         fprint()
+
+def newPowerFlows(PF,PTDF,newP):

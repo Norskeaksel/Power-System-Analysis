@@ -1,4 +1,11 @@
-from functions import *
+import importlib
+import os
+import shutil
+from copy import deepcopy
+os.chdir("..")  # Necesseary due to a Pycharm bug
+from DistributionFactors_and_IMML import functions
+importlib.reload(functions)
+from DistributionFactors_and_IMML.functions import *
 try:
     open('ResultsAssignment4.txt', 'w').close()
 except:
@@ -19,8 +26,8 @@ fprint('This assumption means that we can linearize the sine and cosine terms in
 fprint('With these assumtions, our new DC power flow equation become:')
 fprint('Pi=sum(Bij*(Di-Dj) for j in range(n)). The term Bij*(Di-Dj) = the power flow Pij\n')
 
-
-
+#define nr of buses
+n=4
 # defining the Ybus elements
 x12 = 0.2
 x13 = 0.1
@@ -38,15 +45,12 @@ lines[1, 2] = x23
 lines[2, 3] = x34
 slackbus=3
 
-# build connection matrix
-ik=np.zeros((len(lines),len(lines)))
-c=0
-for i,k in lines.keys():
-    ik[i,k]=c
-    c+=1
+keys=lines.keys()
+# define line numbers
+ik=build_ik(keys,n)
 
-fprint('For our system the Y matrix becomes:')
-Y=buildDCY(lines,4)
+fprint('With the buildDCY function we get that the Y matrix in our system is:')
+Y=buildDCY(lines, n)
 B=np.delete(-Y, slackbus, 0)
 B= np.delete(B, slackbus, 1)
 fprint(B)
@@ -56,13 +60,27 @@ angles=np.linalg.solve(B, P)
 angles=np.append(angles,0)
 P=np.append(P,-sum(P))
 PF=powerFlows(Y,angles,P)
-fprint('\nTask 2. The voltage angles in the load flow solutions are:')
+fprint('\nTask 2:\nThe voltage angles in the load flow solutions are:')
 fprint(angles)
 fprint('The power flows are given by the following matrix:')
 fprint(PF)
-fprint('From this matrix we see the following power flows:')
-powerFlows(Y,angles,P,True)
+fprint('From this matrix we see power generation/demand in each bus as well as the following power flows:')
+PF=powerFlows(Y,angles,P,True)
 
 #Task 3
-fprint('\nPower Transfer Distribution Factors (PTDF) represents the change in real power transfer that occurs on transmission lines when their corresponding buses change their power injections.')
+fprint('\nTask 3:')
+fprint('Power Transfer Distribution Factors (PTDF) represents the change in real power transfer that occurs on transmission lines when their corresponding buses change their power injections.')
 fprint('Each row in the PTDF corresponds to a line and each column corresponds to a bus')
+# the  Zbus matrix  is constructed  by  adding  "+1"  to  the  diagonal  element  corresponding  to  the  slack-node  in  Y,  followed  by  an  inverse  operation.
+Z=deepcopy(Y)
+Z[slackbus,slackbus]+=1
+Z=np.linalg.inv(Z)
+
+
+#b=build_b(Z,keys,n)
+#print(b)
+PTDF=buildPTDF=buildPTDF(Z,Y,ik,n)
+printPTDF(PTDF,keys)
+filename = os.path.basename('ResultsAssignment4.txt')
+dest = os.path.join("DistributionFactors_and_IMML", filename)
+shutil.move('ResultsAssignment4.txt', dest)
