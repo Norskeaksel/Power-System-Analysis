@@ -48,6 +48,9 @@ slackbus=3
 keys=lines.keys()
 # define line numbers
 ik=build_ik(keys,n)
+lines_str = []
+for i, k in keys:
+    lines_str.append(f"line {i}-{k} ")
 
 fprint('With the buildDCY function we get that the Y matrix in our system is:')
 Y=buildDCY(lines, n)
@@ -59,28 +62,111 @@ fprint(B)
 angles=np.linalg.solve(B, P)
 angles=np.append(angles,0)
 P=np.append(P,-sum(P))
-PF=powerFlows(Y,angles,P)
+PF,PF_str=powerFlows(Y,angles,P)
 fprint('\nTask 2:\nThe voltage angles in the load flow solutions are:')
 fprint(angles)
 fprint('The power flows are given by the following matrix:')
 fprint(PF)
 fprint('From this matrix we see power generation/demand in each bus as well as the following power flows:')
-PF=powerFlows(Y,angles,P,True)
+for i in PF_str:
+    fprint(i)
 
 #Task 3
 fprint('\nTask 3:')
 fprint('Power Transfer Distribution Factors (PTDF) represents the change in real power transfer that occurs on transmission lines when their corresponding buses change their power injections.')
 fprint('Each row in the PTDF corresponds to a line and each column corresponds to a bus')
-# the  Zbus matrix  is constructed  by  adding  "+1"  to  the  diagonal  element  corresponding  to  the  slack-node  in  Y,  followed  by  an  inverse  operation.
+# The  Zbus matrix  is constructed  by  adding  "+1"  to  the  diagonal  element  corresponding  to  the  slack-node  in  Y,  followed  by  an  inverse  operation.
 Z=deepcopy(Y)
 Z[slackbus,slackbus]+=1
 Z=np.linalg.inv(Z)
 
-
-#b=build_b(Z,keys,n)
-#print(b)
 PTDF=buildPTDF=buildPTDF(Z,Y,ik,n)
-printPTDF(PTDF,keys)
+printPTDF(PTDF,lines_str)
+
+#Task 4
+loadChange=[-0.5,0,0,0]
+flowChange=(PTDF*loadChange).sum(axis=1)
+fprint('\nTask 4:')
+printFlowChange(loadChange,lines_str,flowChange)
+
+#Task 5
+fprint('\nTask 5:')
+fprint('The original power flows were:')
+fprint(PF_str)
+loadChange=[-0.5,0.3,0,0]
+flowChange=(PTDF*loadChange).sum(axis=1)
+printFlowChange(loadChange,lines_str,flowChange)
+
+P+=loadChange
+P=P[:-1]
+angles=np.linalg.solve(B, P)
+angles=np.append(angles,0)
+P=np.append(P,-sum(P))
+fprint('When we solve the load flow with this new load we get power flows')
+newPF,newPF_str=powerFlows(Y,angles,P)
+fprint(newPF_str)
+fprint('We see by adding the changes to the original flows that we get almost the exact same solution as when we resolve with the new load')
+
+# Part 2
+
+# Task 1
+
+fprint('\nPart 2:')
+fprint('\nTask 1:')
+fprint('The Inverse Matrix Modification Lemma is a technique for solving the new load flow cases that occur when the connections in a solved power system is changed, without the need for resolving evererything')
+
+P=np.array([P0,P1,P2])
+angles=IMML_angles(B,P,1,2,0)
+
+fprint('\nTask 2:\nThe voltage angles in the load flow solutions using IMML are:')
+fprint(angles)
+
+lines[0, 1]=np.inf
+Y=buildDCY(lines, n)
+B=np.delete(-Y, slackbus, 0)
+B= np.delete(B, slackbus, 1)
+anglesDC=np.linalg.solve(B, P)
+anglesDC=np.append(anglesDC,0)
+P=np.append(P,-sum(P))
+PF,PF_str=powerFlows(Y,anglesDC,P)
+
+fprint('The voltage angles using DC power flow is')
+fprint(anglesDC)
+fprint('These angles are identical to the ones found with the IMML approach, which means that the load flow solution is:')
+fprint(PF)
+fprint('From this matrix we see power generation/demand in each bus as well as the following power flows:')
+fprint('P01 =', PF[0,1])
+for i in PF_str:
+    fprint(i)
+
+#Task 3
+P=np.array([P0,P1,P2])
+lines[0, 1] = x12
+Y=buildDCY(lines, n)
+B=np.delete(-Y, slackbus, 0)
+B= np.delete(B, slackbus, 1)
+angles=IMML_angles(B,P,0,2,0.5)
+
+fprint('\nTask 3:\nThe voltage angles in the load flow solutions using IMML are:')
+fprint(angles)
+
+lines[0, 2]*=2
+Y=buildDCY(lines, n)
+B=np.delete(-Y, slackbus, 0)
+B= np.delete(B, slackbus, 1)
+anglesDC=np.linalg.solve(B, P)
+anglesDC=np.append(anglesDC,0)
+P=np.append(P,-sum(P))
+PF,PF_str=powerFlows(Y,anglesDC,P)
+
+fprint('The voltage angles using DC power flow is')
+fprint(anglesDC)
+fprint('These angles are identical to the ones found with the IMML approach, which means that the load flow solution is:')
+fprint(PF)
+fprint('From this matrix we see power generation/demand in each bus as well as the following power flows:')
+for i in PF_str:
+    fprint(i)
+
 filename = os.path.basename('ResultsAssignment4.txt')
 dest = os.path.join("DistributionFactors_and_IMML", filename)
 shutil.move('ResultsAssignment4.txt', dest)
