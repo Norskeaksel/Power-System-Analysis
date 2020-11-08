@@ -68,7 +68,7 @@ The Inverse Matrix Modification Lemma is a technique for solving the new load fl
 
 Task 2:
 The voltage angles in the load flow solutions using IMML are:
-[-0.7275 -0.8075 -0.5625]
+[-0.6875 -0.6625 -0.5625]
 The voltage angles using DC power flow is
 [-0.6875 -0.6625 -0.5625  0.    ]
 These angles are identical to the ones found with the IMML approach, which means that the load flow solution is:

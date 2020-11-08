@@ -116,7 +116,7 @@ fprint('\nTask 1:')
 fprint('The Inverse Matrix Modification Lemma is a technique for solving the new load flow cases that occur when the connections in a solved power system is changed, without the need for resolving evererything')
 
 P=np.array([P0,P1,P2])
-angles=IMML_angles(B,P,1,2,0)
+angles=IMML_angles(B,P,0,1,0)
 
 fprint('\nTask 2:\nThe voltage angles in the load flow solutions using IMML are:')
 fprint(angles)
