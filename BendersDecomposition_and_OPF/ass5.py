@@ -3,7 +3,7 @@ import os
 import shutil
 import pandas as pd
 import numpy as np
-
+from copy import deepcopy
 
 df = pd.read_excel('systemData.xlsx',converters={'Line':str})
 print(df)
@@ -14,6 +14,9 @@ from BendersDecomposition_and_OPF.functions2 import *
 from BendersDecomposition_and_OPF import OPF_Solver
 importlib.reload(OPF_Solver)
 from BendersDecomposition_and_OPF.OPF_Solver import *
+from BendersDecomposition_and_OPF import subproblem
+importlib.reload(subproblem)
+from BendersDecomposition_and_OPF.subproblem import *
 try:
     open('ResultsAssignment5.txt', 'w').close()
 except:
@@ -22,7 +25,6 @@ except:
 
 n=4 # nr of buses
 slackbus=3
-
 # Parameters
 costs = df["GenCosts"].tolist()
 loads = df["Loads"].tolist()
@@ -52,28 +54,12 @@ F = np.array([[0,          -B[1,2],     B[1,2],     0], #P12
               [-B[0,1],    B[0,1],      0,          0], #P01
               [-B[0,2],    0,           B[0,2],     0], #P02
               ])
-print(F)
 fprint('Task 1:')
 fprint('System matrix:')
 fprint(B)
 
-model=solve(B,F,costs,loads,transCap)
-geneation = ["P0:","P1:", "P2:", "P3:"]
-P=[]
-print("\nSummarised:\nObjective value:\n",model.obj())
-print("Power generation:")
-for i in model.N:
-    P.append(model.P[i].value)
-    print(geneation[i], P[i])
-
-L = ["line 1-2: ", "line 0-2: ", "line 0-1: ", "line 2-3: "]
-print("Power flow:")
-for i in model.N:
-    print(L[i], end='')
-    a = 0
-    for c in model.N:
-        a += F[i][c] * model.delta[c].value
-    print(a)
+model=solve(n,B,F,costs,loads,transCap)
+P=pyomoResults(model,F)
 
 #Task 2
 fprint('\nTask 2:')
@@ -86,6 +72,7 @@ fprint('We see that the dual values equal the operating costs in their buses exc
 fprint('This means that we can increase the load in bus 1 without using it\'s generator.')
 
 # Part 2
+fprint('\nPart 2:')
 # Task 1
 B=np.delete(B, slackbus, 0)
 B= np.delete(B, slackbus, 1)
@@ -107,10 +94,83 @@ for i in PF_str:
     fprint(i)
 fprint('We see that the IMML approach gives an infeasible solution as line 0-2 is overloaded')
 
-# Task 2
+fprint('\nTask 2 see file subproblem.py')
+
+# Task 3
 B=-Y
 B=np.delete(B, slackbus, 0)
 B= np.delete(B, slackbus, 1)
+
+
+# calculate PTDF matrix
+Z=deepcopy(Y)
+Z[slackbus,slackbus]+=1
+Z=np.linalg.inv(Z)
+
+keys=lines.keys()
+# define line numbers
+ik=build_ik(keys,n)
+lines_str = []
+for i, k in keys:
+    lines_str.append(f"line {i}-{k} ")
+
+PTDF=buildPTDF=buildPTDF(Z,Y,ik,n)
+#printPTDF(PTDF,lines_str)
+
+sub=subSolve(transCap[1],PF,PTDF,1)
+# New generation
+deltaP=np.zeros(n)
+deltaP+= np.array([sub.Pup[i].value for i in sub.N])
+deltaP-= np.array([sub.Pdown[i].value for i in sub.N])
+P+=deltaP
+flowChange=(PTDF*deltaP).sum(axis=1)
+printFlowChange(deltaP,lines_str,flowChange)
+PF = updatePF(PF,lines_str,flowChange,n)
+fprint('\nTask 3:')
+fprint('Final solution:')
+fprint('Loads:')
+fprint(loads)
+fprint('Generation:')
+fprint(P)
+fprint('Flows:')
+fprint(PF)
+for i in range(n):
+    for k in range(n):
+        if k>i and PF[i,k]!=0:
+            fprint('Line ',i,'-',k,' = ',PF[i,k],sep="")
+
+missmatch=np.zeros(n)
+for i in range(n):
+    missmatch[i]=loads[i]+P[i]-PF[i,i]
+
+#print(missmatch)
+
+#Task 4
+fprint('\nTask 4:')
+fprint('Add constraint sum(model.P[i]-P[i])*dk_dp[i] for i in model.N) <=0')
+Ks=sub.obj()
+rc=np.array([i[-1] for i in sub.rc.items()])[len(sub.rc)//2:]
+subCost=np.ones(n)
+dk_dp=subCost-rc
+dk_dp[1]=-1
+model.constraints.add(sum((model.P[i]-P[i])*dk_dp[i] for i in model.N) <=0)
+
+#Task 5
+
+opt = SolverFactory("gurobi")
+opt.solve(model, load_solutions=True)
+fprint('\nTask 5, base case:')
+pyomoResults(model,F)
+
+fprint('\nTask 5, New case:')
+B=buildDCY(lines, n)
+F = np.array([[0,          -B[1,2],     B[1,2],     0], #P12
+              [0,          0,          -B[2,3],     B[2,3]], #P23
+              [-B[0,1],    B[0,1],      0,          0], #P01
+              [-B[0,2],    0,           B[0,2],     0], #P02
+              ])
+model=solve(n,B,F,costs,loads,transCap,P,dk_dp)
+pyomoResults(model,F)
 
 filename = os.path.basename('ResultsAssignment5.txt')
 dest = os.path.join("BendersDecomposition_and_OPF", filename)

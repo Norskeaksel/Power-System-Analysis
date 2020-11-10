@@ -55,3 +55,88 @@ def powerFlows(Y, angles):
 
         PF[i,i]=sum(PF[i,:])
     return PF,PF_str
+
+def buildPTDF(Z,B,ik,n):
+    """
+    The PTDF value from node n for the line between nodes i and k can then be calculated with PTDF_ik,n= B_ik(Zbus_in-Zbus_kn)
+    """
+    nrOfbuses=n
+    nrOfLines=len(ik)
+    PTDF = np.zeros((nrOfLines,nrOfbuses))
+    for i in range(nrOfLines):
+        for k in range(nrOfLines):
+            row = ik[i, k]
+            if row!=-1:
+                for n in range(nrOfbuses):
+                    PTDF[row, n] = B[i, k] * (Z[i, n] - Z[k, n])
+                    if k>i:
+                        PTDF[row, n]*=-1
+
+    return PTDF
+
+def printPTDF(PTDF,lines):
+    fprint('PTDF MATRIX:')
+    first=1
+    for nodeNr in range(PTDF.shape[1]):
+        if first:
+            fprint('         ',end="")
+            first=0
+        fprint('node', nodeNr,end='      ')
+
+    fprint()
+    for lineNr in range(len(lines)):
+        fprint(lines[lineNr], end="")
+        for node in range(PTDF.shape[1]):
+            val=PTDF[lineNr, node]
+            space = "    "
+            if val>=0:
+                space = "     "
+            fprint("%4.4f" %(PTDF[lineNr, node]),space, end="")
+        fprint()
+
+def build_ik(keys,n):
+    """
+    :return: unsymetrical connection matrix containing the line numbers.
+    """
+    ik = -np.ones((n, n), dtype=int)
+    for nr, (i, k) in enumerate(keys):
+        ik[i, k] = nr
+    return ik
+
+def printFlowChange(loadChange,lines_str,flowChange):
+    fprint('We get the following flow change when the load change is:',loadChange,':')
+    for nr,line in enumerate(lines_str):
+        fprint(line,':',flowChange[nr])
+
+def updatePF(PF,lines_str,flowChange,n):
+    for nr, line in enumerate(lines_str):
+        ik=[int(s) for s in line if s.isdigit()]
+        i=ik[0]
+        k=ik[1]
+        PF[i,k]+=flowChange[nr]
+        PF[k, i] -= flowChange[nr]
+    for i in range(n):
+        PF[i,i]=0
+        PF[i,i]=PF[i].sum()
+
+    return PF
+
+def pyomoResults(model,F):
+    geneation = ["P0:", "P1:", "P2:", "P3:"]
+    P = []
+    print("\nResults:\nObjective value:\n", model.obj())
+    print("Power generation:")
+    for i in model.N:
+        P.append(model.P[i].value)
+        print(geneation[i], P[i])
+
+    L = ["line 1-2: ", "line 2-3: ", "line 0-1: ", "line 0-2: "]
+    print("Power flow:")
+    for i in model.N:
+        print(L[i], end='')
+        a = 0
+        for c in model.N:
+            a += F[i][c] * model.delta[c].value
+        print(a)
+
+    return P

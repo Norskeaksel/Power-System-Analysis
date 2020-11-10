@@ -13,7 +13,7 @@ def build_ik(keys,n):
         ik[i, k] = nr
     return ik
 
-def buildDCY(lines, n):
+def buildY(lines, n):
     Z=np.zeros((n, n))
     Y = np.zeros((n, n))
     for key in lines:

@@ -53,7 +53,7 @@ for i, k in keys:
     lines_str.append(f"line {i}-{k} ")
 
 fprint('With the buildDCY function we get that the Y matrix in our system is:')
-Y=buildDCY(lines, n)
+Y=buildY(lines, n)
 B=np.delete(-Y, slackbus, 0)
 B= np.delete(B, slackbus, 1)
 fprint(B)
@@ -122,7 +122,7 @@ fprint('\nTask 2:\nThe voltage angles in the load flow solutions using IMML are:
 fprint(angles)
 
 lines[0, 1]=np.inf
-Y=buildDCY(lines, n)
+Y=buildY(lines, n)
 B=np.delete(-Y, slackbus, 0)
 B= np.delete(B, slackbus, 1)
 anglesDC=np.linalg.solve(B, P)
@@ -142,7 +142,7 @@ for i in PF_str:
 #Task 3
 P=np.array([P0,P1,P2])
 lines[0, 1] = x12
-Y=buildDCY(lines, n)
+Y=buildY(lines, n)
 B=np.delete(-Y, slackbus, 0)
 B= np.delete(B, slackbus, 1)
 angles=IMML_angles(B,P,0,2,0.5)
@@ -151,7 +151,7 @@ fprint('\nTask 3:\nThe voltage angles in the load flow solutions using IMML are:
 fprint(angles)
 
 lines[0, 2]*=2
-Y=buildDCY(lines, n)
+Y=buildY(lines, n)
 B=np.delete(-Y, slackbus, 0)
 B= np.delete(B, slackbus, 1)
 anglesDC=np.linalg.solve(B, P)

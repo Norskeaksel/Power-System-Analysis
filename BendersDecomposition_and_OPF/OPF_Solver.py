@@ -1,10 +1,10 @@
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
-def solve(B,F,costs,loads,transCap):
+def solve(n,B,F,costs,loads,transCap,P=[],dk_dp=[]):
 
     # initialize model
     model = pyo.ConcreteModel()
-    model.N = pyo.Set(ordered=True, initialize=[0, 1, 2, 3])  # Set of the 4 nodes in our system
+    model.N = pyo.Set(ordered=True, initialize=[i for i in range(n)])  # Set of the n nodes in our system
     model.P = pyo.Var(model.N,domain=pyo.NonNegativeReals)  # Make 4 P-variables that represent power generated at each node
     model.delta = pyo.Var(model.N)  # Make 4 variables that represent the voltage angles at each node
     model.constraints = pyo.ConstraintList()  # Define the list of all constraints
@@ -27,12 +27,16 @@ def solve(B,F,costs,loads,transCap):
 
     # Define constraint F*Delta<=FLmax
     for i in model.N:
-        lhs=sum(F[i][c] * model.delta[c] for c in model.N)
-        model.constraints.add(lhs <= transCap[2-i])
-        model.constraints.add(lhs >= -transCap[2-i])
+        rhs=transCap[2-i]
+        lhs=-rhs
+        mid=sum(F[i][c] * model.delta[c] for c in model.N)
+        model.constraints.add(pyo.inequality(lhs, mid, rhs))
 
+    if len(P):
+        model.constraints.add(sum((model.P[i]-P[i])*dk_dp[i] for i in model.N) <=0)
     # Solve model
     opt = SolverFactory("gurobi")
     model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
+    model.rc = pyo.Suffix(direction=pyo.Suffix.IMPORT)
     results = opt.solve(model, load_solutions=True)
     return model
