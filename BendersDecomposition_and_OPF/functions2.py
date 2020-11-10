@@ -124,19 +124,19 @@ def updatePF(PF,lines_str,flowChange,n):
 def pyomoResults(model,F):
     geneation = ["P0:", "P1:", "P2:", "P3:"]
     P = []
-    print("\nResults:\nObjective value:\n", model.obj())
-    print("Power generation:")
+    fprint("\nResults:\nObjective value:\n", model.obj())
+    fprint("Power generation:")
     for i in model.N:
         P.append(model.P[i].value)
-        print(geneation[i], P[i])
+        fprint(geneation[i], P[i])
 
     L = ["line 1-2: ", "line 2-3: ", "line 0-1: ", "line 0-2: "]
-    print("Power flow:")
+    fprint("Power flow:")
     for i in model.N:
-        print(L[i], end='')
+        fprint(L[i], end='')
         a = 0
         for c in model.N:
             a += F[i][c] * model.delta[c].value
-        print(a)
+        fprint(a)
 
     return P

@@ -5,6 +5,20 @@ System matrix:
  [ 10.   5. -19.   4.]
  [  0.   0.   4.  -4.]]
 
+Results:
+Objective value:
+ 9.099999999999998
+Power generation:
+P0: 0.7999999999999996
+P1: 0.0
+P2: 1.2999999999999996
+P3: 1.0
+Power flow:
+line 1-2: -0.7000000000000002
+line 2-3: -1.0
+line 0-1: 0.20000000000000018
+line 0-2: -1.0
+
 Task 2:
 Disclamer: I don't know how to change the key names so we must count the constraints set in the code to see what the keys correspond to. Doing that, we find that
 constraints 2-5 show the dual value of the P+L=B*Delta constraints and represents cost of increasing the load (marginal cost) in bus 0-3 respectivly.
@@ -57,4 +71,32 @@ Add constraint sum(model.P[i]-P[i])*dk_dp[i] for i in model.N) <=0
 
 Task 5, base case:
 
+Results:
+Objective value:
+ 9.333333333333332
+Power generation:
+P0: 1.0333333333333332
+P1: 0.0
+P2: 1.0666666666666664
+P3: 1.0
+Power flow:
+line 1-2: -0.6533333333333333
+line 2-3: -1.0
+line 0-1: 0.2466666666666668
+line 0-2: -0.813333333333333
+
 Task 5, New case:
+
+Results:
+Objective value:
+ 9.333333333333332
+Power generation:
+P0: 1.0333333333333328
+P1: 0.0
+P2: 1.0666666666666667
+P3: 1.0
+Power flow:
+line 1-2: -0.46666666666666656
+line 2-3: -1.0
+line 0-1: 0.4333333333333331
+line 0-2: -1.0
