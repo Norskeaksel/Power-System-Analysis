@@ -58,6 +58,9 @@ slackbus = 2
 allowedMissmatch = 1e-5
 buses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
 
+
+stop_fprinting()
+
 # I assume we are to plot the voltage as a function of active power demand as that's whats changing
 if Task2:
     buses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)

@@ -6,8 +6,16 @@ from NewtonRapson import Settings1
 importlib.reload(Settings1)
 from NewtonRapson.Settings1 import *
 
+
+global fprinting
+fprinting = 1
+
+def stop_fprinting():
+    global fprinting
+    fprinting = 0
+
 def fprint(*args, **kwargs):
-    if Task1:
+    if Task1 and fprinting:
         print(*args, **kwargs)
         with open('Results.txt', 'a') as file:
             print(*args, **kwargs, file=file)
