@@ -7,7 +7,8 @@ from ContinuationPowerFlow import PowerSystem2
 importlib.reload(PowerSystem2)
 from ContinuationPowerFlow.PowerSystem2 import *
 
-#open('Results.txt', 'w').close()
+
+# open('Results.txt', 'w').close()
 
 
 def buildBuses(P, Q, V, D):
@@ -19,11 +20,10 @@ def buildBuses(P, Q, V, D):
 
 
 def newtonRapson2(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch):
-
     buses = buildBuses(P, Q, V, D)
 
     PS = PowerSystem(lines, buses, slackbus, X, Pnr, Qnr, PQsch)
-    lastEffectDeviation=1e5
+    lastEffectDeviation = 1e5
     i = 0
     while 1:
         i += 1
@@ -42,7 +42,7 @@ def newtonRapson2(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissma
 
         lastEffectDeviation = maxEffectDeviation
 
-    if Task1 and assignmentName=="NewtonRapson":
+    if Task1 and assignmentName == "NewtonRapson":
         filename = os.path.basename('ResultsTask2.txt')
         dest = os.path.join(assignmentName, filename)
         shutil.move('Results.txt', dest)

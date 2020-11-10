@@ -1,10 +1,11 @@
 import importlib
-import os
+import os, sys
 try:
     open('ResultsAssignment3.txt', 'w').close()
 except:
     pass
-os.chdir("..")  # Necesseary due to a Pycharm bug
+sys.path.append('..')
+#os.chdir("..")  # Necesseary due to a Pycharm bug
 from DecoupledPowerFlow import newtonRapson3
 importlib.reload(newtonRapson3)
 from DecoupledPowerFlow.newtonRapson3 import *
@@ -117,6 +118,6 @@ fprint("A further increase quickly renders the dual unable to converge as well")
 
 fprint("Final solutions:")
 cout(DPF10)
-filename = os.path.basename('ResultsAssignment3.txt')
-dest = os.path.join("DecoupledPowerFlow", filename)
-shutil.move('Results.txt', dest)
+#filename = os.path.basename('ResultsAssignment3.txt')
+#dest = os.path.join("DecoupledPowerFlow", filename)
+#shutil.move('Results.txt', dest)

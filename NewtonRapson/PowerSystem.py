@@ -2,7 +2,6 @@ import numpy as np
 from math import *
 import importlib
 from NewtonRapson import Settings1
-
 importlib.reload(Settings1)
 from NewtonRapson.Settings1 import *
 
@@ -17,7 +16,7 @@ def stop_fprinting():
 def fprint(*args, **kwargs):
     if Task1 and fprinting:
         print(*args, **kwargs)
-        with open('Results.txt', 'a') as file:
+        with open('ResultsAssignment1.txt', 'a') as file:
             print(*args, **kwargs, file=file)
 
 
@@ -32,13 +31,13 @@ class Bus:
         return str(self.__dict__)
 
 
-class Line:
+"""class Line:
     def __init__(self, i: int, j: int, r: float, x: float):
         self.line = {(i, j): complex(r, x)}  # line from i to j has impedance
 
     def __str__(self):
         return str(self.__dict__)
-
+"""
 
 class PowerSystem:
     def __init__(self, lines: dict, buses: dict, slackbus: int, X: list, Pnr: list, Qnr: list, PQsch: np.array,

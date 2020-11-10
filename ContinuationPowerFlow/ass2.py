@@ -1,10 +1,11 @@
 import importlib
-import os
+import os, sys
 try:
     open('ResultsAssignment2.txt', 'w').close()
 except:
     pass
-os.chdir("..")  # Necesseary due to a Pycharm bug
+sys.path.append('..')
+#os.chdir("..")  # Necesseary due to a Pycharm bug
 from ContinuationPowerFlow import newtonRapson2
 
 importlib.reload(newtonRapson2)
@@ -155,8 +156,8 @@ for i in buses:
     fprintResults("bus",i,buses[i])
 
 
-filename = os.path.basename('ResultsAssignment2.txt')
-dest = os.path.join(assignmentName, filename)
-shutil.move('Results.txt', dest)
+#filename = os.path.basename('ResultsAssignment2.txt')
+#dest = os.path.join(assignmentName, filename)
+#shutil.move('Results.txt', dest)
 
 print("All done")

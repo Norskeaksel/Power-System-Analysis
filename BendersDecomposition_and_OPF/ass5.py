@@ -85,7 +85,7 @@ lines[1,2]*=2
 Y=buildDCY(lines,n)
 # Calculate flows in new system with predicted angles
 PF,PF_str=powerFlows(Y,angles)
-fprint('\nTask 2:\nThe voltage angles in the load flow solutions using IMML are:')
+fprint('\nTask 1:\nThe voltage angles in the load flow solutions using IMML are:')
 fprint(angles)
 fprint('With these angles we get the following load flow solution:')
 fprint(PF)
@@ -117,7 +117,7 @@ for i, k in keys:
 PTDF=buildPTDF=buildPTDF(Z,Y,ik,n)
 #printPTDF(PTDF,lines_str)
 
-sub=subSolve(transCap[1],PF,PTDF,1)
+sub=subSolve(transCap[1],PF,PTDF,0)
 # New generation
 deltaP=np.zeros(n)
 deltaP+= np.array([sub.Pup[i].value for i in sub.N])
@@ -152,15 +152,14 @@ Ks=sub.obj()
 rc=np.array([i[-1] for i in sub.rc.items()])[len(sub.rc)//2:]
 subCost=np.ones(n)
 dk_dp=subCost-rc
-dk_dp[1]=-1
-model.constraints.add(sum((model.P[i]-P[i])*dk_dp[i] for i in model.N) <=0)
+model.constraints.add(Ks+sum((model.P[i]-P[i])*dk_dp[i] for i in model.N) <=0)
 
 #Task 5
 
 opt = SolverFactory("gurobi")
 opt.solve(model, load_solutions=True)
 fprint('\nTask 5, base case:')
-pyomoResults(model,F)
+P=pyomoResults(model,F)
 
 fprint('\nTask 5, New case:')
 B=buildDCY(lines, n)

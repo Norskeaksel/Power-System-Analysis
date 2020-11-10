@@ -48,7 +48,6 @@ Pnr = [0, 1]
 Qnr = [0, 1]
 
 # defining the buses in the system
-
 P = np.array([P0sch, P1sch, P2sch])
 Q = np.array([Q0sch, Q1sch, Q2sch])
 V = np.array([v0, v1, v2])
@@ -57,8 +56,6 @@ D = np.array([d0, d1, d2])
 slackbus = 2
 allowedMissmatch = 1e-5
 buses = newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmatch)
-
-
 stop_fprinting()
 
 # I assume we are to plot the voltage as a function of active power demand as that's whats changing
@@ -67,8 +64,8 @@ if Task2:
     deltaP = 0.2
     calcFlatStart = True
     calcOldStart = True
-    oldStartBuses=0
-    flatStartBuses=0
+    oldStartBuses = 0
+    flatStartBuses = 0
     newV = [buses[i].v for i in buses]
     newD = [buses[i].d for i in buses]
 
@@ -95,7 +92,7 @@ if Task2:
             newV = [oldStartBuses[i].v for i in buses]
             newD = [oldStartBuses[i].d for i in buses]
         except:  # Algorithm not converging
-            oldLoad=[-load[i] for i in range(len(oldBus1V))]
+            oldLoad = [-load[i] for i in range(len(oldBus1V))]
             plt.plot(oldLoad, oldBus1V, label="Bus 1")
             plt.plot(oldLoad, oldBus2V, label="Bus 2")
             plt.ylabel('Voltage [pu]')
@@ -104,16 +101,16 @@ if Task2:
             plt.legend()
             filename = os.path.basename('//VprevActive.png')
             dest = os.path.join(assignmentName, filename)
-            plt.savefig(dest) #Not working
+            plt.savefig(dest)  # Not working
             plt.show()
             calcOldStart = False
-            oldStartBuses=Bus()
+            oldStartBuses = Bus()
 
         try:
             flatBus1V.append(flatStartBuses[0].v)
             flatBus2V.append(flatStartBuses[1].v)
         except:  # Algorithm not converging
-            flatLoad=[-load[i] for i in range(len(flatBus1V))]
+            flatLoad = [-load[i] for i in range(len(flatBus1V))]
             plt.plot(flatLoad, flatBus1V, label="Bus 1")
             plt.plot(flatLoad, flatBus2V, label="Bus 2")
             plt.ylabel('Voltage [pu]')
@@ -122,12 +119,12 @@ if Task2:
             plt.legend()
             filename = os.path.basename('//VflatActive.png')
             dest = os.path.join(assignmentName, filename)
-            plt.savefig(dest) #Not working
+            plt.savefig(dest)  # Not working
             plt.show()
             calcFlatStart = False
             flatStartBuses = Bus()
 
-        if calcOldStart==0 and calcFlatStart==0:
+        if calcOldStart == 0 and calcFlatStart == 0:
             break
 
 if Task3:
@@ -142,8 +139,8 @@ if Task3:
     deltaQ = 0.2
     calcFlatStart = True
     calcOldStart = True
-    oldStartBuses=0
-    flatStartBuses=0
+    oldStartBuses = 0
+    flatStartBuses = 0
     newV = [buses[i].v for i in buses]
     newD = [buses[i].d for i in buses]
 
@@ -170,7 +167,7 @@ if Task3:
             newV = [oldStartBuses[i].v for i in buses]
             newD = [oldStartBuses[i].d for i in buses]
         except:  # Algorithm not converging
-            oldLoad=[-load[i] for i in range(len(oldBus1V))]
+            oldLoad = [-load[i] for i in range(len(oldBus1V))]
             plt.plot(oldLoad, oldBus1V, label="Bus 1")
             plt.plot(oldLoad, oldBus2V, label="Bus 2")
             plt.ylabel('Voltage [pu]')
@@ -179,16 +176,16 @@ if Task3:
             plt.legend()
             filename = os.path.basename('//VprevReactive.png')
             dest = os.path.join(assignmentName, filename)
-            plt.savefig(dest) #Not working
+            plt.savefig(dest)  # Not working
             plt.show()
             calcOldStart = False
-            oldStartBuses=Bus()
+            oldStartBuses = Bus()
 
         try:
             flatBus1V.append(flatStartBuses[0].v)
             flatBus2V.append(flatStartBuses[1].v)
         except:  # Algorithm not converging
-            flatLoad=[-load[i] for i in range(len(flatBus1V))]
+            flatLoad = [-load[i] for i in range(len(flatBus1V))]
             plt.plot(flatLoad, flatBus1V, label="Bus 1")
             plt.plot(flatLoad, flatBus2V, label="Bus 2")
             plt.ylabel('Voltage [pu]')
@@ -197,12 +194,12 @@ if Task3:
             plt.legend()
             filename = os.path.basename('//VflatReactive.png')
             dest = os.path.join(assignmentName, filename)
-            plt.savefig(dest) #Not working
+            plt.savefig(dest)  # Not working
             plt.show()
             calcFlatStart = False
             flatStartBuses = Bus()
 
-        if calcOldStart==0 and calcFlatStart==0:
+        if calcOldStart == 0 and calcFlatStart == 0:
             break
 
-print("All done") #Can save results and plots by manually aborting the program at this line for some reason
+print("All done")  # Can save results and plots by manually aborting the program at this line for some reason

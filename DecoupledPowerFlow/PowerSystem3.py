@@ -8,12 +8,12 @@ from ContinuationPowerFlow.Settings2 import *
 
 def fprint(*args, **kwargs):
     print(*args, **kwargs)
-    with open('Results.txt', 'a') as file:
+    with open('ResultsAssignment3.txt', 'a') as file:
         print(*args, **kwargs, file=file)
 
 def fprintResults(*args, **kwargs):
     print(*args, **kwargs)
-    with open('Results.txt', 'a') as file:
+    with open('ResultsAssignment3.txt', 'a') as file:
         print(*args, **kwargs, file=file)
 
 

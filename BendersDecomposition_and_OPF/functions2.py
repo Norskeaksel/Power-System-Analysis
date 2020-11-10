@@ -36,7 +36,7 @@ def IMML_angles(H,D0,i,k,change):
     z=M_tran @ Hinv @ M
     c=1/(delta_h_inv+z)
     #D0 = Hinv @ P
-    deltaD=-Hinv @ M * c @ M_tran @ D0
+    deltaD=-Hinv @ M @ M_tran @ D0 * c
     D=D0+deltaD
 
     return D
