@@ -1,17 +1,19 @@
 import numpy as np
 from math import *
 import importlib
+
 from NewtonRapson import Settings1
 importlib.reload(Settings1)
 from NewtonRapson.Settings1 import *
 
-
 global fprinting
 fprinting = 1
+
 
 def stop_fprinting():
     global fprinting
     fprinting = 0
+
 
 def fprint(*args, **kwargs):
     if Task1 and fprinting:
@@ -30,14 +32,6 @@ class Bus:
     def __str__(self):
         return str(self.__dict__)
 
-
-"""class Line:
-    def __init__(self, i: int, j: int, r: float, x: float):
-        self.line = {(i, j): complex(r, x)}  # line from i to j has impedance
-
-    def __str__(self):
-        return str(self.__dict__)
-"""
 
 class PowerSystem:
     def __init__(self, lines: dict, buses: dict, slackbus: int, X: list, Pnr: list, Qnr: list, PQsch: np.array,
@@ -257,8 +251,6 @@ class PowerSystem:
         fprint()
 
     def print(self, itNr, showNumeric=False):
-        # fprint(len(self.lines),"lines",len(self.buses),"buses. Admittance matrix:")
-        # fprint(np.around(self.Ybus,2))
         fprint("ITERATION NR:", itNr)
         fprint("Jacobian:")
         fprint(self.jacobian, '\n')
@@ -277,7 +269,7 @@ class PowerSystem:
 
     def iteration(self, itNr):
         self.buildJacobian()
-        self.numeric()
+        # self.numeric() Calculate the Jacobian numericly to check correctness
 
         PQsch = self.PQsch
         PQk = self.PQk
@@ -287,27 +279,16 @@ class PowerSystem:
         deltaPQ = PQsch - PQk
         DVk = np.linalg.solve(self.jacobian, deltaPQ)
         c = 0
+        # update angles and voltages based on J^-1*missmatch
         for i in self.Pnr:
-            # buses[i].p = PQk[c]
             buses[i].d += DVk[c]
             c += 1
 
         for i in self.Qnr:
-            # buses[i].q = PQk[c]
             buses[i].v += DVk[c]
             c += 1
 
-        V = [buses[i].v for i in range(n)]
-        D = [buses[i].d for i in range(n)]
-
+        # update system before next iteration
         self.DVk = DVk
         self.buses = buses
         self.PFequations()
-
-    def addLines(self, extra):
-        self.lines.update(extra)
-
-    def addBus(self, extra):
-        self.buses.update(extra)
-        self.n += len(extra)
-        self.buildYbus()

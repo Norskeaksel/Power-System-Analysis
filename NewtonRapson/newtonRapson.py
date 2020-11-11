@@ -6,8 +6,6 @@ from NewtonRapson import PowerSystem
 importlib.reload(PowerSystem)
 from NewtonRapson.PowerSystem import *
 
-#if Task1:
-    #open('Results.txt', 'w').close()
 
 
 def buildBuses(P, Q, V, D):
@@ -41,10 +39,5 @@ def newtonRapson(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissmat
             break
 
         lastEffectDeviation = maxEffectDeviation
-
-    if Task1:
-        filename = os.path.basename('ResultsAssignment1.txt')
-        dest = os.path.join(assignmentName, filename)
-        shutil.move('ResultsAssignment1.txt', dest)
 
     return buses
