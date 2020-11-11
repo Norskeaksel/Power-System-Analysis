@@ -317,6 +317,7 @@ class PowerSystem:
         jacobian = np.r_[jacobian, [np.zeros(jNrOfCol)]]  # Add row
         jacobian[-1, oneCol] = 1  # make matrix non singular
         self.jacobian = jacobian
+        return jacobian
 
     def buildPredictionVector(self):
         jacobian = self.jacobian

@@ -17,8 +17,8 @@ def z(r, x):
     return complex(r, x)
 
 
-def printPredictionVector(predictionVector, taskNr):
-    fprint("\nTask", taskNr, "Prediction vector:", predictionVector, "meaning:")
+def printPredictionVector(predictionVector):
+    fprint("\nPrediction vector:", predictionVector, "meaning:")
     c = 0
     for i in Pnr:
         fprint("Delta D", i, " = ", predictionVector[c], sep="")
@@ -32,16 +32,16 @@ def printPredictionVector(predictionVector, taskNr):
 
 
 # defining the Ybus elements
-r12 = 0.1
-x12 = 0.2
-r13 = 0.05
-x13 = 0.25
-r23 = 0.05
-x23 = 0.15
+r01 = 0.1
+x01 = 0.2
+r02 = 0.05
+x02 = 0.25
+r12 = 0.05
+x12 = 0.15
 lines = {}
-lines[0, 1] = z(r12, x12)
-lines[0, 2] = z(r13, x13)
-lines[1, 2] = z(r23, x23)
+lines[0, 1] = z(r01, x01)
+lines[0, 2] = z(r02, x02)
+lines[1, 2] = z(r12, x12)
 
 # defining the known states
 d2 = 0
@@ -88,21 +88,28 @@ for i in buses:
     fprint("bus", i, buses[i])
 
 # Task 2
+fprint('\nTask 2:')
 oneCol = len(Pnr + Qnr)  # which column the extended jacobian should contain a 1
-PS.extendJacobian(ba, oneCol)
+jacobian=PS.extendJacobian(ba, oneCol)
+fprint('Extended Jacobian:')
+fprint(jacobian)
 predictionVector = PS.buildPredictionVector()
-printPredictionVector(predictionVector, 2)
+printPredictionVector(predictionVector)
+
 
 # Task 3
+fprint('\nTask3:')
 step = 0.3
 PS.takePredictionStep(ba, step)
 P = PS.PQsch[:len(PS.PQsch) // 2]
 Q = PS.PQsch[len(PS.PQsch) // 2:]
 # iterate until solution is found for new load:
 i = 0
+PS.print(i)
 while 1:
     i += 1
     PS.CPFiteration(ba, oneCol)
+    PS.print(i)
     maxActiveDeviation = max(abs(P[j] - PS.buses[j].p) for j in Pnr)
     maxReactiveDeviation = max(abs(Q[j] - PS.buses[j].q) for j in Qnr)
     maxEffectDeviation = max(maxActiveDeviation, maxReactiveDeviation)
@@ -111,14 +118,15 @@ while 1:
 
     lastEffectDeviation = maxEffectDeviation
 
-fprint('Task 3, New bus values:')
+fprint('Final bus values:')
 buses = PS.buses
 for i in buses:
     fprint("bus", i, buses[i])
 
 # Task 4
+fprint('\nTask 4:')
 predictionVector = PS.buildPredictionVector()
-printPredictionVector(predictionVector, 4)
+printPredictionVector(predictionVector)
 
 # find step that corresponds with load with 30% increase
 step = -sum(P) * 0.3
@@ -128,6 +136,7 @@ for idx, val in enumerate(newP):
     PS.buses[idx].p = val
 
 # Task 5
+fprint('Task 5:')
 PS.takePredictionStep(ba, step)
 
 # find bus with larges rate of change
@@ -147,6 +156,7 @@ i = 0
 while 1:
     i += 1
     PS.CPFiteration(ba, oneCol)
+    #PS.print(i)
     maxActiveDeviation = max(abs(P[j] - PS.buses[j].p) for j in Pnr)
     maxReactiveDeviation = max(abs(Q[j] - PS.buses[j].q) for j in Qnr)
     maxEffectDeviation = max(maxActiveDeviation, maxReactiveDeviation)
@@ -158,4 +168,5 @@ buses = PS.buses
 for i in buses:
     fprint("bus", i, buses[i])
 
+fprint('Uncomment PS.print(i) in the while loop to see the output of all 10 iterations')
 print("All done. Results saved to ResultAssignment2.txt")
