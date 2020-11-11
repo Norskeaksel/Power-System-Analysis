@@ -1,14 +1,8 @@
 import importlib
-import shutil
-import os
 
 from ContinuationPowerFlow import PowerSystem2
-
 importlib.reload(PowerSystem2)
 from ContinuationPowerFlow.PowerSystem2 import *
-
-
-# open('Results.txt', 'w').close()
 
 
 def buildBuses(P, Q, V, D):
@@ -41,10 +35,5 @@ def newtonRapson2(lines, X, PQsch, P, Q, V, D, Pnr, Qnr, slackbus, allowedMissma
             break
 
         lastEffectDeviation = maxEffectDeviation
-
-    if Task1 and assignmentName == "NewtonRapson":
-        filename = os.path.basename('ResultsTask2.txt')
-        dest = os.path.join(assignmentName, filename)
-        shutil.move('Results.txt', dest)
 
     return PS
