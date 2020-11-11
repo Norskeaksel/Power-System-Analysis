@@ -1,14 +1,8 @@
 import importlib
-import shutil
-import os
 
 from DecoupledPowerFlow import PowerSystem3
 importlib.reload(PowerSystem3)
 from DecoupledPowerFlow.PowerSystem3 import *
-
-if Task1:
-    open('Results.txt', 'w').close()
-
 
 def buildBuses(P, Q, V, D):
     buses = {}

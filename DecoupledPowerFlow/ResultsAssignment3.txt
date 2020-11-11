@@ -736,7 +736,7 @@ Delta Q0 = -0.5
 Delta Q1 = -0.5
 
 
-Task 4 primal FDPF solution:
+Task 4, primal FDPF solution:
 
 ITERATION NR: 1
 Net injections:

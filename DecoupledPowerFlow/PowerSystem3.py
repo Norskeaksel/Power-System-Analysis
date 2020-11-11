@@ -1,21 +1,11 @@
 import numpy as np
 from math import *
-import importlib
-from ContinuationPowerFlow import Settings2
 
-importlib.reload(Settings2)
-from ContinuationPowerFlow.Settings2 import *
 
 def fprint(*args, **kwargs):
     print(*args, **kwargs)
     with open('ResultsAssignment3.txt', 'a') as file:
         print(*args, **kwargs, file=file)
-
-def fprintResults(*args, **kwargs):
-    print(*args, **kwargs)
-    with open('ResultsAssignment3.txt', 'a') as file:
-        print(*args, **kwargs, file=file)
-
 
 class Bus:
     def __init__(self, p=0.0, q=0.0, v=1, d=0):
@@ -23,14 +13,6 @@ class Bus:
         self.q = q
         self.v = v
         self.d = d
-
-    def __str__(self):
-        return str(self.__dict__)
-
-
-class Line:
-    def __init__(self, i: int, j: int, r: float, x: float):
-        self.line = {(i, j): complex(r, x)}  # line from i to j has impedance
 
     def __str__(self):
         return str(self.__dict__)
