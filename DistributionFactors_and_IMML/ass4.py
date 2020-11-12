@@ -1,6 +1,5 @@
 import importlib
 import os, sys
-import shutil
 from copy import deepcopy
 
 sys.path.append('..')
@@ -179,3 +178,5 @@ fprint(PF)
 fprint('From this matrix we see power generation/demand in each bus as well as the following power flows:')
 for i in PF_str:
     fprint(i)
+
+print("All done. Results saved to ResultAssignment4.txt")

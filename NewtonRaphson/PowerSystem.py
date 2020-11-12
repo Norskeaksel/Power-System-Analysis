@@ -2,9 +2,9 @@ import numpy as np
 from math import *
 import importlib
 
-from NewtonRapson import Settings1
+from NewtonRaphson import Settings1
 importlib.reload(Settings1)
-from NewtonRapson.Settings1 import *
+from NewtonRaphson.Settings1 import *
 
 global fprinting
 fprinting = 1

@@ -8,7 +8,6 @@ except:
 sys.path.append('..')
 
 from ContinuationPowerFlow import newtonRapson2
-
 importlib.reload(newtonRapson2)
 from ContinuationPowerFlow.newtonRapson2 import *
 
@@ -153,20 +152,21 @@ Q = PS.PQsch[len(PS.PQsch) // 2:]
 
 i = 0
 # iterate until solution is found for new load:
+oldDeviation=1e5
 while 1:
     i += 1
     PS.CPFiteration(ba, oneCol)
-    #PS.print(i)
+    PS.print(i)
     maxActiveDeviation = max(abs(P[j] - PS.buses[j].p) for j in Pnr)
     maxReactiveDeviation = max(abs(Q[j] - PS.buses[j].q) for j in Qnr)
     maxEffectDeviation = max(maxActiveDeviation, maxReactiveDeviation)
-    if maxEffectDeviation < allowedMissmatch or i == 10:
+    if maxEffectDeviation >= oldDeviation or i == 10:
         break
+    oldDeviation=maxEffectDeviation
 
 fprint('Task 5, Final bus values:')
 buses = PS.buses
 for i in buses:
     fprint("bus", i, buses[i])
 
-fprint('Uncomment PS.print(i) in the while loop to see the output of all 10 iterations')
 print("All done. Results saved to ResultAssignment2.txt")

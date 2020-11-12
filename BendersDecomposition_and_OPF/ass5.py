@@ -175,3 +175,5 @@ F = np.array([[0, -B[1, 2], B[1, 2], 0],  # P12
               ])
 model = solve(n, B, F, costs, loads, transCap, P, dk_dp)
 pyomoResults(model, F)
+
+print("All done. Results saved to ResultAssignment5.txt")

@@ -2,9 +2,9 @@ import importlib
 import shutil
 import os
 
-from NewtonRapson import PowerSystem
+from NewtonRaphson import PowerSystem
 importlib.reload(PowerSystem)
-from NewtonRapson.PowerSystem import *
+from NewtonRaphson.PowerSystem import *
 
 
 

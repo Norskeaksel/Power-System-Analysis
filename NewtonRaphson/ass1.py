@@ -1,9 +1,9 @@
 import importlib
 from matplotlib import pyplot as plt
 
-from NewtonRapson import newtonRapson
-importlib.reload(newtonRapson)
-from NewtonRapson.newtonRapson import *
+from NewtonRaphson import newtonRaphson
+importlib.reload(newtonRaphson)
+from NewtonRaphson.newtonRaphson import *
 
 
 
@@ -213,4 +213,4 @@ if Task3:
         if calcOldStart == 0 and calcFlatStart == 0:
             break
 
-print("All done. Results saved to ResultAssignment1")
+print("All done. Results saved to ResultAssignment1.txt")
