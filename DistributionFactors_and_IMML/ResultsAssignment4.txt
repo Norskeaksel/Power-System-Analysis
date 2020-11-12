@@ -6,14 +6,14 @@ Where V are voltage magnitudes, Y is admittance magnitude and O is admittance an
 
 In DC power flow we make 3 critical assumptions
 1. Line resistances are negligible compared to line reactances (RL<<XL, for all lines).
-This means that we set Y=-Y, that we disregard grid losses and that Oij becomes pi/2
+This means that we set B=-Y(all except slack row and column), that we disregard grid losses and that Oij becomes pi/2
 2. All bus voltages are constant at 1pu
 3. Voltage angle differences between buses are smal
 This assumption means that we can linearize the sine and cosine terms in the AC power flow equations
 With these assumtions, our new DC power flow equation become:
-Pi=sum(Bij*(Di-Dj) for j in range(n)). The term Bij*(Di-Dj) = the power flow Pij
+Pi=sum(Bij*(Di-Dj) for j in range(n)). The term Bij*(Di-Dj) = the power flow Pij.
 
-With the buildDCY function we get that the Y matrix in our system is:
+With the buildDCY function and by removing the slack row and column we get that the B matrix in our system is:
 [[ 15.  -5. -10.]
  [ -5.   9.  -4.]
  [-10.  -4.  18.]]
@@ -68,7 +68,7 @@ The Inverse Matrix Modification Lemma is a technique for solving the new load fl
 
 Task 2:
 The voltage angles in the load flow solutions using IMML are:
-[-0.6875 -0.6625 -0.5625]
+[[-0.6875 -0.6625 -0.5625]]
 The voltage angles using DC power flow is
 [-0.6875 -0.6625 -0.5625  0.    ]
 These angles are identical to the ones found with the IMML approach, which means that the load flow solution is:
@@ -84,7 +84,7 @@ P23 = -2.25
 
 Task 3:
 The voltage angles in the load flow solutions using IMML are:
-[-0.76634615 -0.72019231 -0.5625    ]
+[[-0.76634615 -0.72019231 -0.5625    ]]
 The voltage angles using DC power flow is
 [-0.76634615 -0.72019231 -0.5625      0.        ]
 These angles are identical to the ones found with the IMML approach, which means that the load flow solution is:

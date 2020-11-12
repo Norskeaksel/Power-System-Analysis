@@ -38,14 +38,14 @@ def powerFlows(Y, angles,P):
             if i==j:
                 PF[i,j]=P[i]
             else:
-                PF[i, j] = abs(Y[i, j]) * (angles[i] - angles[j])
+                PF[i, j] = Y[i, j] * (angles[i] - angles[j])
                 if print and i<j and PF[i, j]!=0:
                     PF_str.append(f"P{i}{j} = {PF[i, j]}")
     return PF,PF_str
 
-def buildPTDF(Z,B,ik,n):
+def buildPTDF(Z,Y,ik,n):
     """
-    The PTDF value from node n for the line between nodes i and k can then be calculated with PTDF_ik,n= B_ik(Zbus_in-Zbus_kn)
+    The PTDF value from node n for the line between nodes i and k can then be calculated with PTDF_ik,n= Y_ik(Zbus_in-Zbus_kn)
     """
     nrOfbuses=n
     nrOfLines=len(ik)
@@ -53,9 +53,9 @@ def buildPTDF(Z,B,ik,n):
     for i in range(nrOfLines):
         for k in range(nrOfLines):
             row = ik[i, k]
-            if row!=-1:
+            if row!=-1: # line exists
                 for n in range(nrOfbuses):
-                    PTDF[row, n] = B[i, k] * (Z[i, n] - Z[k, n])
+                    PTDF[row, n] = Y[i, k] * (Z[i, n] - Z[k, n])
                     if k>i:
                         PTDF[row, n]*=-1
 
@@ -95,7 +95,7 @@ def IMML_angles(H,P,i,k,change):
     """
     :param i: bus nr of line start
     :param k: bus nr of line end
-    :param change: factor describing the new admittance at the line
+    :param change: factor describing the new admittance at the line (old * change gives new admittance)
     :return the new voltage angles of the system
     """
     Hinv=np.linalg.inv(H)
@@ -108,7 +108,7 @@ def IMML_angles(H,P,i,k,change):
     z=M_tran @ Hinv @ M
     c=1/(delta_h_inv+z)
     D0 = Hinv @ P
-    deltaD=-Hinv @ M * c @ M_tran @ D0
+    deltaD=-Hinv @ M @ M_tran @ D0 * c
     D=D0+deltaD
 
     return D
