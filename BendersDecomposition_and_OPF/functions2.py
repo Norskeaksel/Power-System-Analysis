@@ -5,7 +5,6 @@ def fprint(*args, **kwargs):
         print(*args, **kwargs, file=file)
 
 def buildDCY(lines, n):
-    Z=np.zeros((n, n))
     Y = np.zeros((n, n))
     for key in lines:
         i = key[0]
@@ -21,9 +20,11 @@ def buildDCY(lines, n):
 
 def IMML_angles(H,D0,i,k,change):
     """
+    :param H: Matrix describing the original topology
+    :param D0:
     :param i: bus nr of line start
     :param k: bus nr of line end
-    :param change: factor describing the new admittance at the line
+    :param change: factor describing the new admittance at the line (old * change gives new admittance)
     :return the new voltage angles of the system
     """
     Hinv=np.linalg.inv(H)
@@ -35,7 +36,6 @@ def IMML_angles(H,D0,i,k,change):
     M_tran=np.transpose(M)
     z=M_tran @ Hinv @ M
     c=1/(delta_h_inv+z)
-    #D0 = Hinv @ P
     deltaD=-Hinv @ M @ M_tran @ D0 * c
     D=D0+deltaD
 
@@ -49,7 +49,7 @@ def powerFlows(Y, angles):
     for i in range(n):
         for j in range(n):
             if i != j:
-                PF[i, j] = abs(Y[i, j]) * (angles[i] - angles[j])
+                PF[i, j] = Y[i, j] * (angles[i] - angles[j])
                 if print and i<j and PF[i, j]!=0:
                     PF_str.append(f"P{i}{j} = {PF[i, j]}")
 
