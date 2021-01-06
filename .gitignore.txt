@@ -1,7 +1,0 @@
-__pycache__
-.ipynb_checkpoints
-.idea
-Newton Rapson Power System.ipynb
-Object_Example.py
-
-C://Users//ahsor//OneDrive//Dokumenter//R//ProsjektOppgave
